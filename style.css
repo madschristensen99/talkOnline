@@ -1,0 +1,169 @@
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+        }
+        header {
+            background-color: #008B8B;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-family: 'Arial', serif;
+            font-weight: bold;
+            border-bottom: 2px solid #93E9BE;
+        }
+        h1 {
+            background-color: #008B8B;
+            border-bottom: 1px solid #93E9BE;
+            padding: 5px;
+            font-size: 16px;
+            font-weight: normal;
+            text-align: center;
+            margin: 0px;
+            color: #FFFFFF;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 0 auto; 
+        }
+        .create-post-form {
+            margin-bottom: 0px;
+            
+        }
+        .create-post-form input[type="text"] {
+            width: calc(100% - 40px); 
+            padding: 10px 20px; 
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .sendPost {
+            padding: 10px 20px;
+            background-color: #008B8B;
+            color: #fff;
+            border: 1px solid #93E9BE; /* seafoam green border */
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .sendPost:hover {
+            background-color: #05696b; /* Darker shade for hover effect */
+        }
+        .menu {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        #posts .post {
+            font-family: 'Helvetica Neue', sans-serif;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            margin: 10px auto;
+        }
+
+        .post h3 {
+            text-align: right;
+            margin: 0;
+            margin-bottom: 10px;
+            color: #93E9BE; /* seafoam green */
+            display: inline-block; /* makes it inline */
+        }
+
+        .post .score, .post .tag {
+            color: #aaa;
+        }
+
+        .post .author {
+            color: #aaa;
+            font-size: 10px;
+        }
+        .ens-link {
+            color: #FFB81C;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .upvote-button, .downvote-button, .tag-button, .reply-button, .contribute-button {
+            background-color: #008B8B; /* madstea */
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            margin: 10px 2px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            border: 1px solid #93E9BE;
+        }
+
+        .upvote-button:hover, .downvote-button:hover, .tag-button:hover, .reply-button:hover, .contribute-button:hover {
+            background-color: #05696B; /* darker shade of green on hover */
+        }
+        table {
+            width: 100%;
+            margin-top: 5px;
+        }
+        td {
+            text-align: center;
+        }
+        .one-sixth {
+            width: 16.67%; /* 1/6 of the table width */
+        }
+
+        .two-thirds {
+            width: 66.66%; /* 2/3 of the table width */
+        }
+        .post-content img {
+            width: 100%;
+        }
+
+        .post-content video, .post-content iframe {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+        }
+        .post-content {
+            font-family: Arial;
+            margin: 10px;
+        }
+        h1 a {
+            color: #93E9BE;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .address-link {
+            color: #aaa;
+            font-size: 13px;
+            font-weight: normal;
+        }
+    .pdf-container {
+      text-align: center;
+      margin: 0 auto;
+      width: 95%;
+    }
+
+    .pdf-container iframe {
+      width: 100%;
+      height: 800px; /* You can adjust this value */
+    }
+        /* Styling for the button in its normal state */
+        #clickableReplies {
+            cursor: pointer;
+            background-color: #dddddd;
+        }
+        /* Styling for the button in its abnormal state */
+        #clickableReplies:hover {
+            cursor: pointer;
+            background-color: #bbb;
+        }
+

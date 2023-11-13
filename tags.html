@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tag Management - Talk Online</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <header>
+        Tags
+    </header>
+    <main>
+
+        <!-- Tag Creation Section -->
+        <section id="tag-creation">
+            <h2>Create a New Tag</h2>
+            <div>
+                <input type="text" id="new-tag-name" placeholder="Enter tag name">
+                <button id="mint-tag-button">Mint Tag</button>
+            </div>
+        </section>
+
+        <!-- My Tags Section -->
+        <section id="my-tags">
+            <h2>My Tags</h2>
+            <div id="tag-management">
+                <!-- Dynamically populated list of user's tags with management options (set fees, requirements, etc.) -->
+            </div>
+        </section>
+        <section id="edit">
+            <h2>Edit Tag</h2>
+            <div id="tag-management">
+                <input type="text" id="new-tag-name" placeholder="Enter tag name">
+                <input type="text" id="content" placeholder="Enter content">
+                <button id="edit-tag-button">Edit Tag</button>
+            </div>
+        </section>
+
+    </main>
+    <footer>
+        <!-- Footer content here -->
+    </footer>
+<script type="module">
+    import { ethers } from "./ethers.min.js";
+    import { forumAddress, forumAbi, tagAddress, tagAbi } from './mainnet/constants.js';
+        let provider;
+        let signer;
+    // Wrap the initialization in an async IIFE
+    (async () => {
+
+        if (window.ethereum) {
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+            try {
+                let network = await provider.getNetwork();
+                if (network.chainId == 5) {
+                    await provider.send("eth_requestAccounts", []);
+                    signer = provider.getSigner();
+                }
+                else {
+                    provider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
+                    console.log("Please switch your network to the Goerli testnet.");
+                }
+            } catch (error) {
+                provider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
+                console.log("Unable to detect network");
+            }
+        }
+        else {
+            console.log("Sign in with a <a href = \"../web3.html\">Web3 provider</a>");
+            provider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
+        }
+    })();
+
+    // DOMContentLoaded and event listener setup
+    document.addEventListener('DOMContentLoaded', (event) => {
+        // Event listener for the 'Mint Tag' button
+        document.getElementById('mint-tag-button').addEventListener('click', function () {
+            const tagName = document.getElementById('new-tag-name').value;
+            createTag(tagName);
+        });
+
+        // Event listener for the 'Edit Tag' button
+        document.getElementById('edit-tag-button').addEventListener('click', function () {
+            const tagName = document.getElementById('new-tag-name').value; // Assuming this is the same input for tag name
+            const content = document.getElementById('content').value;
+            modifyField(tagName, content);
+        });
+    });
+
+    // Define the createTag function
+    function createTag(name) {
+        // Implementation of tag creation logic
+        console.log("Creating tag:", name);
+        const tagContract = new ethers.Contract(tagAddress, tagAbi, signer);
+        tagContract.createTag(name);
+        // Add your code here
+    }
+
+    // Define the modifyField function
+    function modifyField(name, content) {
+        // Implementation of tag modification logic
+        console.log("Modifying tag:", name, "with content:", content);
+        const tagContract = new ethers.Contract(tagAddress, tagAbi, signer);
+        tagContract.modifyField(name, content);
+        // Add your code here
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web3 Social Media</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <header>Talk Online</header>
+
+    <div class="container">
+        <div class="menu">
+
+                <a href="./account.html">Account</a>
+                <a href="./tags.html">Tags</a>
+                <a href="./token.html">TALK</a>
+                <select name="options" id="options">
+                    <option value="random">Random</option>
+                    <option value="popular">Popular</option>
+                    <option value="new">New</option>
+                    <option value="recommended">Recommended</option>
+                </select>
+
+        </div>
+        
+        <form class="create-post-form" id="createPost">
+            <input type="text" placeholder="post a link or say what you gonna say" id = "post-content">
+            <button class="sendPost" >Send it</button>
+        </form>
+
+    </div>
+    <div id = "posts">
+    </div>
+            <script type = "module">
+                // TODO: modulate/functionalize code
+                // TODO: TAGs TALK Account pages
+                // TODO: post pages
+                // TODO: Indivdual tag pages
+                // TODO: replies
+                // TODO: tagging
+                // Save the selected algorithm to localStorage when it changes
+                document.getElementById('options').addEventListener('change', function() {
+                    localStorage.setItem('selectedAlgo', this.value);
+                });
+
+                // Retrieve the selected algorithm from localStorage on page load
+                document.addEventListener('DOMContentLoaded', function() {
+                    var selectedAlgo = localStorage.getItem('selectedAlgo');
+                    if (selectedAlgo) {
+                        document.getElementById('options').value = selectedAlgo;
+                    }
+                });
+                import { ethers } from "./ethers.min.js";
+                import { forumAddress, forumAbi, tagAddress, tagAbi, tokenAddress, tokenAbi } from './mainnet/constants.js';
+                import { getENSName, isURL, getFileType, handleURL, formatDateForDisplay } from './helpers.js';
+                // TODO: add new file to import which handles content generation, reusable async functions
+                // A Web3Provider wraps a standard Web3 provider, which is
+                // what MetaMask injects as window.ethereum into each page
+                // function displayContent
+                async function enableAlgo (algoChosen, contractObject){
+                    // TODO: run algorithms
+                    let og = await contractObject.getPost(0);
+                    console.log(algoChosen);
+                    let forumLength = og[4].length;
+                    if(algoChosen == "new"){
+                        // TODO Load forumlength-1, 2, 3, 4, and further if its the second time its happening, error checking if there are less than 8 replies in a  forum
+                        console.log(og[4]);
+                        console.log(parseInt(og[4][0]._hex, 16));
+                        let OPs = og[4];
+                        console.log(OPs);
+                        console.log(parseInt(OPs[OPs.length - 1])._hex, 16);
+                        let returnObj = parseInt(OPs[OPs.length - 1]._hex, 16);
+                        let returnable;
+                        returnable = [0, 0, 0, 0, 0, 0, 0, 0];
+                        return returnable;
+                    }
+                    else if(algoChosen == "recommended"){
+                        console.log("recommended");
+                    }
+                    else if(algoChosen == "random"){
+                        console.log("random");
+                        let OPs = og[4];
+                        let returnable = [parseInt(OPs[Math.trunc(Math.random() * forumLength)]), parseInt(OPs[Math.trunc(Math.random() * forumLength)]), parseInt(OPs[Math.trunc(Math.random() * forumLength)]), parseInt(OPs[Math.trunc(Math.random() * forumLength)]), parseInt(OPs[Math.trunc(Math.random() * forumLength)]), parseInt(OPs[Math.trunc(Math.random() * forumLength)]), parseInt(OPs[Math.trunc(Math.random() * forumLength)]), parseInt(OPs[Math.trunc(Math.random() * forumLength)])];
+                        return returnable;
+                    }
+                    else if(algoChosen == "popular"){
+                        console.log("popular");
+                    }
+                    let arr = [0, 1, 2, 0, 0, 0, 0, 0];
+                    return arr;
+                }
+                async function buttonMaker(){
+                    let output = `<footer id = \"givenPostsFooter\"><button class=\"upvote-button\">^</button><button class=\"downvote-button\">v</button><button class=\"tag-button\">Add Tag</button><button class=\"reply-button\">Reply</button>` +
+                        `<div class="input-tag" hidden><input type="text" class="input-field-tag" placeholder="Enter Tag name"><button class="submit-tag">Submit</button></div></footer>`+
+                        `<div class="input-reply" hidden><input type="text" class="input-field-reply" placeholder="Enter your reply..."><button class="submit-reply">Submit</button></div></footer>`;
+                    return output;
+                }
+                async function activateContent(signer){
+                    document.getElementById('createPost').addEventListener('submit', async (e) => {
+                        // Prevent the default form submission
+                        e.preventDefault();
+
+                        // Get the post content from the textarea
+                        const postContent = document.getElementById('post-content').value;
+
+                        if (!postContent.trim()) {
+                            alert("Post content is empty. Please write something.");
+                            return;
+                        }
+
+                        // Create a new post by calling the `createPost` function on the contract
+                        const forumContract = new ethers.Contract(forumAddress, forumAbi, signer);
+                        try {
+                            // Send the transaction and wait for it to be mined
+                            let tx = await forumContract.createPost(postContent, 0);
+                            let receipt = await tx.wait();
+                            console.log('Transaction has been mined: ', receipt.transactionHash);
+                            // Clear the textarea after successful post creation
+                            document.getElementById('post-content').value = '';
+                        } catch (error) {
+                            // Handle any errors
+                            console.error('An error occurred:', error);
+                        }
+                    });
+
+                    document.addEventListener('click', async (e) => {
+                        const postElement = e.target.closest('article');  // Find the parent article
+                        if (!postElement) return;  // If clicked outside a post, exit
+                        // Fetch the post ID from the link in the post header
+                        const postIDLink = postElement.querySelector('h1 a');
+                        if (!postIDLink) return;  // If the link isn't found, exit
+                        const postID = postIDLink.textContent;
+                        const forumContract = new ethers.Contract(forumAddress, forumAbi, signer);
+                        // TODO: create function that redcirects or informs user when they try to do spmething that requires tokens, convince to buy
+                        // Check if the 'Add Tag' or 'Reply' buttons were clicked
+                        let action;
+                        if (e.target.classList.contains('tag-button')) {
+                            const inputWrapper = postElement.querySelector('.input-tag');
+                            const inputField = postElement.querySelector('.input-field');
+                            inputWrapper.toggleAttribute('hidden'); // Toggle visibility
+                            inputField.focus(); // Focus on the field for immediate typing
+                            action = "tag";
+                        }
+                        else if (e.target.classList.contains('reply-button')){
+                            const inputWrapper = postElement.querySelector('.input-reply');
+                            const inputField = postElement.querySelector('.input-field');
+                            inputWrapper.toggleAttribute('hidden'); // Toggle visibility
+                            inputField.focus(); // Focus on the field for immediate typing
+                            action = "reply";
+                        }
+                        else if (e.target.classList.contains('upvote-button')){
+                            forumContract.upvotePost(postID);
+                        }
+                        else if (e.target.classList.contains('downvote-button')){
+                            forumContract.downvotePost(postID);
+                        }
+
+                        else if (e.target.classList.contains('submit-tag')) {
+                            console.log("tagg");
+                            
+                            const inputField = postElement.querySelector('.input-field-tag');
+                            const inputValue = inputField.value.trim();
+                            console.log(inputValue);
+                            forumContract.tagPost(postID, inputValue);
+                            /*
+                            if (inputValue && action) {
+                                if(action == "reply"){
+                                    forumContract.createPost(inputValue, postID);
+                                }
+                                else if(action == "tag"){
+                                    try{
+                                        forumContract.tagPost(postID, inputField);
+                                    } catch(error){
+                                        console.log("probably an invalid tag");
+                                    }
+                                    console.log("TagTime");
+                                }
+                                // Send your request with the inputValue
+                                // For example:
+                                // await sendTagOrReply(inputValue);
+                                inputField.value = ''; // Clear the input field after sending the request
+                            } else {
+                                alert('Please enter a valid tag or reply.');
+                            }
+                            */
+                        }
+                        else if (e.target.classList.contains('submit-reply')) {
+                            const inputField = postElement.querySelector('.input-field-reply');
+                            const inputValue = inputField.value.trim();
+                            forumContract.createPost(inputValue, postID);
+                        }
+                    });
+                }
+                async function loadContent(id, contract){
+                    let content = await contract.getPost(id);
+                    let ensName = await getENSName(content[0], provider);
+                    
+                    // TODO: turn date getter into its own function
+                    const events = await contract.queryFilter(contract.filters.PostCreated(null, null, id + 1, null));
+                    let dateField = "Day One";
+                    try{
+                        const blockNumber = events[0].blockNumber;
+                        const block = await provider.getBlock(blockNumber);
+                        const timestamp = block.timestamp;
+                        const dateObject = new Date(timestamp * 1000);
+                        const humanReadableDate = await formatDateForDisplay(dateObject);
+                        dateField = humanReadableDate;
+                    }
+                    catch(error){
+                        console.log("post Event not found could be because its the 0th post");
+                    }
+                    
+                    // TODO: turn setup header into its own function
+                    let postHTML = "<h1>";
+                    postHTML += `<div style="display: flex; justify-content: space-between;">`;
+                    postHTML += dateField;
+                    postHTML += `<a href="https://talk.online/${id.toString()}" text-align: right;>${id.toString()}</a></div>`
+                    // TODO: make this work even if network does not support ens
+                    postHTML +=  ensName;
+                    postHTML += "</h1>";
+                    
+                    if(isURL(content[1])){
+                        postHTML += await handleURL(content[1]);
+                    } else {
+                        // not a url, just use it as text
+                        console.log("text");
+                        postHTML += `<p class = "post-content">${content[1]}</p>`;
+                    }
+                    
+                    var footer = await buttonMaker();
+                    postHTML += footer;
+
+                    // TODO: cool lower table interactions
+                    postHTML += `<table><tr> <td class ="one-sixth">Score: ` + ((content[2] - content[3]) / (10 ** 18)).toString();
+                    postHTML += `</td> <td class="two-thirds">` + `Tags go here` + `</td>`;
+                    postHTML += `<td class="one-sixth" id = "clickableReplies">Replies: ` + content[4].length.toString() + `</td> </tr> </table>`;
+                    return postHTML;
+                }
+                function displayContent(provider, sectionID){
+                    const forumContractView = new ethers.Contract(forumAddress, forumAbi, provider);
+                    const cardContainer = document.getElementById(sectionID);
+                    let currentPage = 1;
+                    const cardLimit = 999;
+                    const cardIncrease = 8;
+                    const pageCount = Math.ceil(cardLimit / cardIncrease);
+                    let throttleTimer;
+                    const throttle = (callback, time) => {
+                        if (throttleTimer) return;
+                        throttleTimer = true;
+                        setTimeout(() => {
+                            callback();
+                            throttleTimer = false;
+                        }, time);
+                    };
+
+                    const addCards = async(pageIndex) => {
+                        
+                        currentPage = pageIndex;
+                        const startRange = (pageIndex - 1) * cardIncrease;
+                        const endRange = currentPage == pageCount ? cardLimit : pageIndex * cardIncrease;
+                        var algo = document.getElementById("options").value;
+                        var postIds = await enableAlgo(algo, forumContractView);
+                        for (let i = startRange + 1; i <= endRange; i++) {
+                            createPost(i, postIds.pop());
+                        }
+                    };
+                    const createPost = async (index, postID) => {
+                        const post = document.createElement("article");
+                        post.className = "post";
+                        post.id = `post${index}`;
+                        post.innerHTML = await loadContent(postID, forumContractView);
+                        cardContainer.appendChild(post);
+                        return post;
+                    }
+                    const handleInfiniteScroll = () => {
+                        throttle(() => {
+                            const endOfPage = window.innerHeight + window.pageYOffset >= document.body.offsetHeight;
+                            if (endOfPage) {
+                                console.log("you scrolled");
+                                addCards(currentPage + 1);
+                            }
+                            if (currentPage === pageCount) {
+                                removeInfiniteScroll();
+                            }
+                        }, 1000);
+
+                    };
+
+                    const removeInfiniteScroll = () => {
+                        window.removeEventListener("scroll", handleInfiniteScroll);
+                    };
+                    handleInfiniteScroll();
+                    addCards(currentPage);
+                    window.addEventListener("scroll", handleInfiniteScroll);
+
+                }
+
+                let provider;
+                if(window.ethereum){
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                    let signer;
+                    try{
+                        let network = await provider.getNetwork();
+                        if (network.chainId == 1) {
+                            // MetaMask requires requesting permission to connect users accounts
+                            await provider.send("eth_requestAccounts", []);
+                            // The MetaMask plugin also allows signing transactions to
+                            // send ether and pay to change state within the blockchain.
+                            // For this, you need the account signer...
+                            signer = provider.getSigner();
+                        }
+                        else{
+                            provider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
+                            document.getElementById("createPost").innerHTML = "Please switch your network to the Ethereum Mainnet";
+                        }  
+
+                    }
+                    catch(error){
+                        provider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
+                        document.getElementById("createPost").innerHTML = "Unable to detect network";
+                    }
+                    // TODO: change algo to recommended
+                    displayContent(provider, "posts");
+                    activateContent(signer);
+                }
+                else{
+                    document.getElementById("createPost").innerHTML = "Sign in with a <a href = \"./web3.html\">Web3 provider</a>";
+                    provider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
+                    displayContent(provider, "posts");
+                }
+                
+                document.getElementById('posts').addEventListener('click', async (event) => {
+                    if (event.target.id === 'clickableReplies') {
+                        let repliesElement = event.target.closest('tr');
+                        let firstTdHTML = repliesElement.querySelector('td:first-child').outerHTML;
+                        const forumContract = new ethers.Contract(forumAddress, forumAbi, provider);
+                        const postElement = event.target.closest('article');
+                        if (!postElement) return;  // If clicked outside a post, exit
+                        // Fetch the post ID from the link in the post header
+                        const postIDLink = postElement.querySelector('h1 a');
+                        if (!postIDLink) return;  // If the link isn't found, exit
+                        const postID = postIDLink.textContent;
+                        let replies = await forumContract.getPostReplies(postID);
+                        // parseInt(OPs[OPs.length - 1]._hex, 16);
+                        // TODO: function to take a list of reply IDs and return the content
+                        console.log(replies);
+                        // Create new content
+                        let newContent = `<td class="one-sixth">Tags</td>`; // TODO: load tags as a vertical wall
+                        newContent += `<td class="two-thirds">Replies go here bruv</td>`;// TODO: call await async function for grabbing the replies from a given post
+                        
+                        // Update the innerHTML of the entire row
+                        repliesElement.innerHTML = firstTdHTML + newContent;
+                    }
+                });
+
+            </script>
+
+</body>
+</html>

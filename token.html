@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Tokenomics and Utility</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        TALK
+    </header>
+    <main>
+        <!-- Token Description Section -->
+        <section>
+            <h2>About the Token</h2>
+            <p>Our token, powered by innovative tokenomics allows people on the internet to own and control their communities for themselves.</p>
+            <!-- Add more details here -->
+        </section>
+
+        <!-- Purchase Options -->
+        <section>
+            <h2>Purchase Tokens</h2>
+            <div>
+                Our token sale is beginning...
+            </div>
+        </section>
+
+
+        <!-- ERC20 Basic Interactions -->
+<!-- ERC20 Basic Interactions -->
+<section>
+    <h2>Token Interactions</h2>
+    <div id = "youHold">
+        You Hold:
+    </div>
+    <label for="recipient">Recipient Address:</label>
+    <input id="recipient" type="text" placeholder="Enter Recipient Address"/>
+    <label for="amount">Amount:</label>
+    <input id="amount" type="number" placeholder="Enter Token Amount"/>
+    <button id ="sendTokensButton">Send Tokens</button>
+    <script type="module">
+        import { ethers } from "./ethers.min.js";
+        import { tokenAddress, tokenAbi } from './mainnet/constants.js';
+
+        let provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner();
+        const tokenContract = new ethers.Contract(tokenAddress, tokenAbi, signer);
+        console.log(tokenContract);
+        console.log(await signer.getAddress());
+        const balance = await tokenContract.balanceOf(signer.getAddress());
+        console.log("Sender's balance:", balance.toString());
+        document.getElementById("youHold").innerHTML += balance.toString();
+        const canTransfer = await tokenContract.canTransfer(signer.getAddress());
+        console.log(canTransfer);
+        
+        document.getElementById("holdDuration").innerHTML += canTransfer.toString();
+        document.getElementById('sendTokensButton').addEventListener('click', async () => {
+            // Get the recipient address and amount from input fields
+            const recipientAddress = document.getElementById('recipient').value.trim();
+            const tokenAmount = document.getElementById("amount").value;
+            console.log(tokenAmount);
+            // Ensure the values are valid before sending
+            if (ethers.utils.isAddress(recipientAddress)) {
+                try {
+                    const tx = await tokenContract.transfer(recipientAddress, tokenAmount);
+                    console.log(`Transaction hash: ${tx.hash}`);
+                    await tx.wait();
+                    console.log('Transaction confirmed');
+                } catch (error) {
+                    console.error('Error sending tokens:', error);
+                }
+            } else {
+                console.error('Invalid recipient address or amount.');
+            }
+        });
+        
+    </script>
+</section>
+
+        <!-- View HODL Time -->
+        <section>
+            <h2>Check Hold Duration</h2>
+            <p id="holdDuration">We require tokens to be held for 24 hours after forum participations. You can transfer?: </p>
+        </section>
+        <h2>Whitepaper</h2>
+        <div class="pdf-container">
+            <iframe src="Whitepaper.pdf"></iframe>
+        </div>
+    </main>
+</body>
+</html>

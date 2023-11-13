@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Details - Web3 Social Media</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+
+<body>
+    <h1>
+        <h1>Your Account</h1>
+    </h1r>
+    <main>
+        <section id="account-details">
+            <h2>Token Details</h2>
+            <p><strong>Number of Tokens:</strong> <span id="token-count"></span></p>
+
+            <h2>NFTs You Hold</h2>
+            <div id="nft-gallery">
+                <!-- NFT items go here -->
+            </div>
+
+            <h2>Your Posts</h2>
+            <p><strong>Total Posts:</strong> <span id="post-count">0</span></p>
+            <p><strong>Total Score on All Posts:</strong> <span id="post-score">0</span></p>
+        </section>
+<script type="module">
+    import { ethers } from "./ethers.min.js";
+    import { forumAddress, forumAbi, tagAddress, tagAbi, tokenAddress, tokenAbi } from './constants.js';
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+
+        const userAddress = document.getElementById("ethAddress").innerHTML;
+        console.log(userAddress);
+        
+        const tokenContract = new ethers.Contract(tokenAddress, tokenAbi, provider);
+        var bigb = await tokenContract.balanceOf(userAddress);
+
+ </script>
+    </main>
+</body>
+</html>
