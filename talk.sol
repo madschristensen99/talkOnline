@@ -276,7 +276,7 @@ contract Forum {
     Tag public tagContract;
 
     event PostCreated(address indexed author, string content, uint indexed postID, uint indexed replyingTo);
-    event PostTagged(uint indexed postId, string indexed tagId, address indexed tagger);
+    event PostTagged(uint indexed postId, string indexed tagId, address indexed tagger, string tagName, string modify);
     event PostEdited(uint indexed postId, string newContent);
     event PostLiked(uint indexed postID, address indexed liker);
     event PostDisliked(uint indexed postID, address indexed disliker);
@@ -332,7 +332,7 @@ contract Forum {
         require(tagContract.ownerOf(id) != address(0), "Tag does not exist");
         require(postId < posts.length, "Post does not exist");
         require(talkContract.balanceOf(msg.sender) >= tagContract.getTokenRequirement(tagContent), "Must hold more TALK tokens.");
-        require(!posts[postId].taggedByUser[msg.sender][id]);
+        require(!posts[postId].taggedByUser[msg.sender][id], "You already tagged this");
 
         uint256 fee = tagContract.getFee(tagContent);
 
@@ -340,7 +340,8 @@ contract Forum {
             talkContract.transferFrom(msg.sender, tagContract.ownerOf(id), fee);
         }
         posts[postId].taggedByUser[msg.sender][id] = true;
-        emit PostTagged(postId, tagContent, msg.sender);
+        ( , , string memory modifiableField, ) = tagContract.getTagDetails(tagContent);
+        emit PostTagged(postId, tagContent, msg.sender, tagContent, modifiableField);
     }
 
     /**
