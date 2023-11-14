@@ -25,7 +25,7 @@
         </div>
         
         <form class="create-post-form" id="createPost">
-            <input type="text" placeholder="post a link or say what you gonna say" id = "post-content">
+            <input type="text" placeholder="Post a link! Say something." id = "post-content">
             <button class="sendPost" >Send it</button>
         </form>
 
@@ -65,13 +65,10 @@
                     let forumLength = og[4].length;
                     if(algoChosen == "new"){
                         // TODO Load forumlength-1, 2, 3, 4, and further if its the second time its happening, error checking if there are less than 8 replies in a  forum
-                        console.log(og[4]);
-                        console.log(parseInt(og[4][0]._hex, 16));
                         let OPs = og[4];
-                        console.log(OPs);
-                        console.log(parseInt(OPs[OPs.length - 1])._hex, 16);
                         let returnObj = parseInt(OPs[OPs.length - 1]._hex, 16);
                         let returnable;
+                        // TODO: loop to populate most recnt post based on op.length, iterate through the end op and add a int to the system to track so that way post continously get older
                         returnable = [0, 0, 0, 0, 0, 0, 0, 0];
                         return returnable;
                     }
@@ -150,10 +147,12 @@
                             action = "reply";
                         }
                         else if (e.target.classList.contains('upvote-button')){
+                            // TODO: try catch on if they own tokens
                             forumContract.upvotePost(postID);
                         }
                         else if (e.target.classList.contains('downvote-button')){
                             forumContract.downvotePost(postID);
+                            // TODO: try catch on if they own tokens
                         }
 
                         else if (e.target.classList.contains('submit-tag')) {
@@ -162,28 +161,8 @@
                             const inputField = postElement.querySelector('.input-field-tag');
                             const inputValue = inputField.value.trim();
                             console.log(inputValue);
+                            // TODO: try catch on tag validity
                             forumContract.tagPost(postID, inputValue);
-                            /*
-                            if (inputValue && action) {
-                                if(action == "reply"){
-                                    forumContract.createPost(inputValue, postID);
-                                }
-                                else if(action == "tag"){
-                                    try{
-                                        forumContract.tagPost(postID, inputField);
-                                    } catch(error){
-                                        console.log("probably an invalid tag");
-                                    }
-                                    console.log("TagTime");
-                                }
-                                // Send your request with the inputValue
-                                // For example:
-                                // await sendTagOrReply(inputValue);
-                                inputField.value = ''; // Clear the input field after sending the request
-                            } else {
-                                alert('Please enter a valid tag or reply.');
-                            }
-                            */
                         }
                         else if (e.target.classList.contains('submit-reply')) {
                             const inputField = postElement.querySelector('.input-field-reply');
@@ -197,8 +176,9 @@
                     let ensName = await getENSName(content[0], provider);
                     
                     // TODO: turn date getter into its own function
-                    const events = await contract.queryFilter(contract.filters.PostCreated(null, null, id + 1, null));
+                    const events = await contract.queryFilter(contract.filters.PostCreated(id));
                     let dateField = "Day One";
+                    
                     try{
                         const blockNumber = events[0].blockNumber;
                         const block = await provider.getBlock(blockNumber);
@@ -233,7 +213,7 @@
 
                     // TODO: cool lower table interactions
                     postHTML += `<table><tr> <td class ="one-sixth">Score: ` + ((content[2] - content[3]) / (10 ** 18)).toString();
-                    postHTML += `</td> <td class="two-thirds">` + `Tags go here` + `</td>`;
+                    postHTML += `</td> <td class="two-thirds">` + await fetchTags(id, contract) + `</td>`;
                     postHTML += `<td class="one-sixth" id = "clickableReplies">Replies: ` + content[4].length.toString() + `</td> </tr> </table>`;
                     return postHTML;
                 }
@@ -346,13 +326,45 @@
                         // TODO: function to take a list of reply IDs and return the content
                         console.log(replies);
                         // Create new content
-                        let newContent = `<td class="one-sixth">Tags</td>`; // TODO: load tags as a vertical wall
-                        newContent += `<td class="two-thirds">Replies go here bruv</td>`;// TODO: call await async function for grabbing the replies from a given post
+                        let newContent = repliesElement.querySelector('td:nth-child(2)').outerHTML.replace("\"two-thirds\"", "\"one-sixth\"");
+                        let replyContent = await fetchReplies(postID, forumContract);
+                        newContent += `<td class="two-thirds">` + replyContent + `</td>`;// TODO: call await async function for grabbing the replies from a given post
                         
                         // Update the innerHTML of the entire row
                         repliesElement.innerHTML = firstTdHTML + newContent;
                     }
+                    // TODO: if provider.signer is invalid, tehn add a message under the buttons saying that they need to sign in with a web3 provider. 
                 });
+                
+                async function fetchReplies(postID, contractObject){
+
+                    let newz = await contractObject.getPost(postID);
+                    let replyArr = [];
+
+                    for (const element of newz[4]) {
+                        console.log(parseInt(element._hex, 16)); // Log the parsed element
+
+                        let fullReplyInformation = await contractObject.getPost(parseInt(element._hex, 16)); // Await the asynchronous call
+                        replyArr.push(fullReplyInformation[1]);
+                    }
+                    return replyArr;
+                }
+
+                async function fetchTags(postID, contractObject) {
+
+                    // Create a filter for the 'PostTagged' event where the first argument (postId) matches the given postID
+                    const filter = contractObject.filters.PostTagged(postID, null, null);
+
+                    // Query the event logs with the filter
+                    const logs = await contractObject.queryFilter(filter);
+                    let tags = "Tags go here";
+                    if(logs.length > 0){
+                        console.log(logs[0].args);
+                        tags = logs[0].args[3];
+                        // TODO: handle modifiable field
+                    }
+                    return tags.slice(0, 12);
+                }
 
             </script>
 
