@@ -118,7 +118,7 @@ contract Tag is ERC721Enumerable {
      */
 
     function createTag(string memory tagContent) public {
-        require(talkContract.balanceOf(msg.sender) >  1 ** uint256(talkContract.decimals()), "Must hold at least one TALK token");
+        require(talkContract.balanceOf(msg.sender) >  10 ** uint256(talkContract.decimals()), "Must hold at least one TALK token");
         require(block.timestamp >= lastTagCreationTime[msg.sender] + TAG_CREATION_INTERVAL, "You must wait for 1 hour between crafting tags");
         talkContract.voteLock();
         _mint(msg.sender, uint256(keccak256(bytes(tagContent))));
@@ -275,7 +275,7 @@ contract Forum {
     talkOnlineToken public talkContract;
     Tag public tagContract;
 
-    event PostCreated(address indexed author, uint postID);
+    event PostCreated(uint indexed postID);
     event PostTagged(uint indexed postId, string indexed tagId, address indexed tagger, string tagName, string modify);
     event PostEdited(uint indexed postId);
     event PostLiked(uint indexed postID, address indexed liker, uint postIDs, address personWhoLiked);
@@ -297,7 +297,7 @@ contract Forum {
         newPost.proScore = 0;
         newPost.conScore = 0;
         newPost.author = msg.sender;
-        emit PostCreated(msg.sender, 0);
+        emit PostCreated(0);
     }
 
     /**
@@ -319,7 +319,7 @@ contract Forum {
         newPost.proScore = 0;
         newPost.conScore = 0;
 
-        emit PostCreated(msg.sender, postNumber);
+        emit PostCreated(postNumber);
     }
 
     /**
