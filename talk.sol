@@ -275,11 +275,11 @@ contract Forum {
     talkOnlineToken public talkContract;
     Tag public tagContract;
 
-    event PostCreated(address indexed author, string content, uint indexed postID, uint indexed replyingTo);
+    event PostCreated(address indexed author, uint postID);
     event PostTagged(uint indexed postId, string indexed tagId, address indexed tagger, string tagName, string modify);
-    event PostEdited(uint indexed postId, string newContent);
-    event PostLiked(uint indexed postID, address indexed liker);
-    event PostDisliked(uint indexed postID, address indexed disliker);
+    event PostEdited(uint indexed postId);
+    event PostLiked(uint indexed postID, address indexed liker, uint postIDs, address personWhoLiked);
+    event PostDisliked(uint indexed postID, address indexed disliker, uint postIDs, address personWhoLiked);
 
     /**
      * @dev Contract constructor initializes the forum with required contract addresses.
@@ -297,7 +297,7 @@ contract Forum {
         newPost.proScore = 0;
         newPost.conScore = 0;
         newPost.author = msg.sender;
-        emit PostCreated(msg.sender, newPost.content, posts.length, 0);
+        emit PostCreated(msg.sender, 0);
     }
 
     /**
@@ -313,13 +313,13 @@ contract Forum {
 
         newPost.author = msg.sender;
         newPost.content = content;
-        posts[replyId].replies.push(posts.length - 1);
+        uint postNumber = posts.length - 1;
+        posts[replyId].replies.push(postNumber);
         newPost.replyingTo = replyId;
         newPost.proScore = 0;
         newPost.conScore = 0;
 
-
-        emit PostCreated(msg.sender, content, posts.length, replyId);
+        emit PostCreated(msg.sender, postNumber);
     }
 
     /**
@@ -340,6 +340,7 @@ contract Forum {
             talkContract.transferFrom(msg.sender, tagContract.ownerOf(id), fee);
         }
         posts[postId].taggedByUser[msg.sender][id] = true;
+        // holy moly i gotta admit this is an odd line of code but this is how you fetch a single element from a tuple and return it
         ( , , string memory modifiableField, ) = tagContract.getTagDetails(tagContent);
         emit PostTagged(postId, tagContent, msg.sender, tagContent, modifiableField);
     }
@@ -353,7 +354,7 @@ contract Forum {
         require(postId < posts.length, "Post does not exist");
         require(posts[postId].author == msg.sender, "Only the author can edit the post");
         posts[postId].content = updatedContent;
-        emit PostEdited(postId, updatedContent);
+        emit PostEdited(postId);
     }
 
     /**
@@ -371,7 +372,7 @@ contract Forum {
 
         posts[postId].upvotes[msg.sender] = amount;
         posts[postId].proScore += amount;
-        emit PostLiked(postId, msg.sender);
+        emit PostLiked(postId, msg.sender, postId, msg.sender);
 
     }
 
@@ -390,7 +391,7 @@ contract Forum {
 
         posts[postId].downvotes[msg.sender] = amount;
         posts[postId].conScore += amount;
-        emit PostDisliked(postId, msg.sender);
+        emit PostDisliked(postId, msg.sender, postId, msg.sender);
     }
     /**
      * @dev Allows a user to remove an upvote from a post.
