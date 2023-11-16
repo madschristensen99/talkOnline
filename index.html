@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web3 Social Media</title>
     <link rel="stylesheet" href="./style.css">
+    <link href='https://fonts.googleapis.com/css?family=Orbitron' rel='stylesheet'>
 </head>
 <body>
     <header>Talk Online</header>
@@ -16,9 +17,9 @@
                 <a href="./tags.html">Tags</a>
                 <a href="./token.html">TALK</a>
                 <select name="options" id="options">
-                    <option value="random">Random</option>
-                    <option value="popular">Popular</option>
                     <option value="new">New</option>
+                    <option value="popular">Popular</option>
+                    <option value="random">Random</option>
                     <option value="recommended">Recommended</option>
                 </select>
 
@@ -31,14 +32,12 @@
 
     </div>
     <div id = "posts">
+        <img src = "https://media.tenor.com/JBgYqrobdxsAAAAi/loading.gif" style = "display: block; margin-left: auto; margin-right: auto">
     </div>
             <script type = "module">
                 // TODO: modulate/functionalize code
-                // TODO: TAGs TALK Account pages
-                // TODO: post pages
-                // TODO: Indivdual tag pages
-                // TODO: replies
-                // TODO: tagging
+                // TODO: format replies
+                // TODO: format tagging
                 // Save the selected algorithm to localStorage when it changes
                 document.getElementById('options').addEventListener('change', function() {
                     localStorage.setItem('selectedAlgo', this.value);
@@ -52,24 +51,25 @@
                     }
                 });
                 import { ethers } from "./ethers.min.js";
-                import { forumAddress, forumAbi, tagAddress, tagAbi, tokenAddress, tokenAbi } from './constants.js';
+                import { forumAddress, forumAbi, tagAddress, tagAbi, tokenAddress, tokenAbi } from './mainnet/constants.js';
                 import { getENSName, isURL, getFileType, handleURL, formatDateForDisplay } from './helpers.js';
-                // TODO: add new file to import which handles content generation, reusable async functions
                 // A Web3Provider wraps a standard Web3 provider, which is
                 // what MetaMask injects as window.ethereum into each page
                 // function displayContent
                 async function enableAlgo (algoChosen, contractObject){
-                    // TODO: run algorithms
+                    // TODO: improve algos
                     let og = await contractObject.getPost(0);
                     console.log(algoChosen);
                     let forumLength = og[4].length;
                     if(algoChosen == "new"){
-                        // TODO Load forumlength-1, 2, 3, 4, and further if its the second time its happening, error checking if there are less than 8 replies in a  forum
                         let OPs = og[4];
                         let returnObj = parseInt(OPs[OPs.length - 1]._hex, 16);
                         let returnable;
-                        // TODO: loop to populate most recnt post based on op.length, iterate through the end op and add a int to the system to track so that way post continously get older
-                        returnable = [0, 0, 0, 0, 0, 0, 0, 0];
+                        if (forumLength > 7){
+                            return [returnObj, parseInt(OPs[OPs.length - 2]._hex, 16), parseInt(OPs[OPs.length - 3]._hex, 16), parseInt(OPs[OPs.length - 4]._hex, 16), parseInt(OPs[OPs.length - 5]._hex, 16), parseInt(OPs[OPs.length - 6]._hex, 16), parseInt(OPs[OPs.length - 7]._hex, 16), parseInt(OPs[OPs.length - 8]._hex, 16)];
+                        }
+                        // TODO: loop to populate most recent post based on op.length, iterate through the end op and add a int to the system to track so that way post continously get older
+                        returnable = [0, 1, 7, 2, 5, 4, 8, 9];
                         return returnable;
                     }
                     else if(algoChosen == "recommended"){
@@ -129,7 +129,6 @@
                         if (!postIDLink) return;  // If the link isn't found, exit
                         const postID = postIDLink.textContent;
                         const forumContract = new ethers.Contract(forumAddress, forumAbi, signer);
-                        // TODO: create function that redcirects or informs user when they try to do spmething that requires tokens, convince to buy
                         // Check if the 'Add Tag' or 'Reply' buttons were clicked
                         let action;
                         if (e.target.classList.contains('tag-button')) {
@@ -147,12 +146,40 @@
                             action = "reply";
                         }
                         else if (e.target.classList.contains('upvote-button')){
-                            // TODO: try catch on if they own tokens
-                            forumContract.upvotePost(postID);
+                            try{
+                                await forumContract.upvotePost(postID);
+                            }
+                            catch (error){
+                                let errorElement = e.target.closest('#givenPostsFooter');
+                                let analysis = error.message;//TODO: already voted on post, cant vote on your own post
+                                if (analysis.includes("Already")){
+                                    errorElement.innerHTML += `You've already voted on this post. `;
+                                }
+                                else if (analysis.includes("Author")){
+                                    errorElement.innerHTML += `You are the post owner. `;
+                                }
+                                else{
+                                    errorElement.innerHTML += `You don't hold <a href="../token.html">TALK tokens</a> `;
+                                }
+                            }
                         }
                         else if (e.target.classList.contains('downvote-button')){
-                            forumContract.downvotePost(postID);
-                            // TODO: try catch on if they own tokens
+                            try{ 
+                                await forumContract.downvotePost(postID);
+                            }
+                            catch (error){
+                                let errorElement = e.target.closest('#givenPostsFooter');
+                                let analysis = error.message;//TODO: already voted on post, cant vote on your own post
+                                if (analysis.includes("Already")){
+                                    errorElement.innerHTML += `You've already voted on this post. `;
+                                }
+                                else if (analysis.includes("Author")){
+                                    errorElement.innerHTML += `You are the post owner. `;
+                                }
+                                else{
+                                    errorElement.innerHTML += `You don't hold <a href="./token.html">TALK tokens</a> `;
+                                }
+                            }
                         }
 
                         else if (e.target.classList.contains('submit-tag')) {
@@ -161,8 +188,13 @@
                             const inputField = postElement.querySelector('.input-field-tag');
                             const inputValue = inputField.value.trim();
                             console.log(inputValue);
-                            // TODO: try catch on tag validity
-                            forumContract.tagPost(postID, inputValue);
+                            try {
+                                await forumContract.tagPost(postID, inputValue);
+                            }
+                            catch (error){
+                                let errorElement = e.target.closest('#givenPostsFooter');
+                                errorElement.innerHTML += `That's an invalid <a href="./tags.html">tag.</a> `;
+                            }
                         }
                         else if (e.target.classList.contains('submit-reply')) {
                             const inputField = postElement.querySelector('.input-field-reply');
@@ -201,7 +233,7 @@
                     postHTML += "</h1>";
                     
                     if(isURL(content[1])){
-                        postHTML += await handleURL(content[1]);
+                        postHTML += await handleURL(content[1], "post-content");
                     } else {
                         // not a url, just use it as text
                         console.log("text");
@@ -211,8 +243,7 @@
                     var footer = await buttonMaker();
                     postHTML += footer;
 
-                    // TODO: cool lower table interactions
-                    postHTML += `<table><tr> <td class ="one-sixth">Score: ` + ((content[2] - content[3]) / (10 ** 18)).toString();
+                    postHTML += `<table class = "postInfo"><tr> <td class ="one-sixth">Score: ` + ((content[2] - content[3]) / (10 ** 18)).toString();
                     postHTML += `</td> <td class="two-thirds">` + await fetchTags(id, contract) + `</td>`;
                     postHTML += `<td class="one-sixth" id = "clickableReplies">Replies: ` + content[4].length.toString() + `</td> </tr> </table>`;
                     return postHTML;
@@ -270,7 +301,7 @@
                     const removeInfiniteScroll = () => {
                         window.removeEventListener("scroll", handleInfiniteScroll);
                     };
-                    handleInfiniteScroll();
+                    cardContainer.innerHTML = "";
                     addCards(currentPage);
                     window.addEventListener("scroll", handleInfiniteScroll);
 
@@ -321,19 +352,25 @@
                         const postIDLink = postElement.querySelector('h1 a');
                         if (!postIDLink) return;  // If the link isn't found, exit
                         const postID = postIDLink.textContent;
-                        let replies = await forumContract.getPostReplies(postID);
-                        // parseInt(OPs[OPs.length - 1]._hex, 16);
-                        // TODO: function to take a list of reply IDs and return the content
-                        console.log(replies);
                         // Create new content
                         let newContent = repliesElement.querySelector('td:nth-child(2)').outerHTML.replace("\"two-thirds\"", "\"one-sixth\"");
                         let replyContent = await fetchReplies(postID, forumContract);
-                        newContent += `<td class="two-thirds">` + replyContent + `</td>`;// TODO: call await async function for grabbing the replies from a given post
+                        newContent += `<td class="two-thirds">` + replyContent + `</td>`;
                         
                         // Update the innerHTML of the entire row
                         repliesElement.innerHTML = firstTdHTML + newContent;
                     }
-                    // TODO: if provider.signer is invalid, tehn add a message under the buttons saying that they need to sign in with a web3 provider. 
+
+                    try {
+                        const signer = provider.getSigner();
+                        await signer.getAddress();
+                    }
+                    catch (error){
+                        // document.getElementsById.givenPostsFooter.innerHTML += "Sign in with web3"
+                        // TODO: Fix infinite error messages?
+                        let errorElement = event.target.closest('#givenPostsFooter');
+                        errorElement.innerHTML += `Sign in with <a href = \"./web3.html\">web3</a> `;
+                    }
                 });
                 
                 async function fetchReplies(postID, contractObject){
@@ -346,7 +383,9 @@
 
                         let fullReplyInformation = await contractObject.getPost(parseInt(element._hex, 16)); // Await the asynchronous call
                         replyArr.push(fullReplyInformation[1]);
+                        // TODO: fetch information about sub-replies
                     }
+                    // TODO: HERE: replyArr formatting
                     return replyArr;
                 }
 
@@ -357,13 +396,23 @@
 
                     // Query the event logs with the filter
                     const logs = await contractObject.queryFilter(filter);
-                    let tags = "Tags go here";
-                    if(logs.length > 0){
-                        console.log(logs[0].args);
-                        tags = logs[0].args[3];
-                        // TODO: handle modifiable field
+                    let tags = `<div class="tag-container">`;
+                    for(var i = 0; i < logs.length; i ++){
+                        let newCo = logs[i].args[3];
+                        // modifier
+                        if(isURL(logs[i].args[4])){
+                            newCo = `<a href="https://talk.online/${newCo}">` + await handleURL(logs[i].args[4], "tag-content") + `</a>`;
+                        }
+                        else{
+                            newCo = `<a href="https://talk.online/${newCo}">` + newCo.slice(0, 12) + `</a>`;
+                        }
+                        tags += newCo;
                     }
-                    return tags.slice(0, 12);
+                    tags += `</div>`;
+                    if(logs.length == 0){
+                        tags = `Tags go here`;
+                    }
+                    return tags;
                 }
 
             </script>
