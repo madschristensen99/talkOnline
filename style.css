@@ -1,56 +1,67 @@
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f7f7f7;
+            font-family: 'Segoe UI', sans-serif;;
         }
         header {
             background-color: #008B8B;
             color: #fff;
-            padding: 20px;
+            padding: 14px;
             text-align: center;
             font-size: 24px;
-            font-family: 'Arial', serif;
+            font-family: 'Segoe UI', sans-serif;
             font-weight: bold;
             border-bottom: 2px solid #93E9BE;
         }
-        h1 {
-            background-color: #008B8B;
-            border-bottom: 1px solid #93E9BE;
-            padding: 5px;
-            font-size: 16px;
-            font-weight: normal;
-            text-align: center;
-            margin: 0px;
-            color: #FFFFFF;
-        }
+h1 {
+    background-color: #008B8B;
+    padding: 5px;
+    font-size: 16px;
+    font-weight: normal;
+    font-family: 'Segoe UI', sans-serif;
+    text-align: center;
+    margin: 0px;
+    color: #FFFFFF;
+    border-top-left-radius: 5px; /* Rounds the top left corner */
+    border-top-right-radius: 5px; /* Rounds the top right corner */
+}
 
         .container {
             max-width: 1000px;
             margin: 50px auto;
             background-color: #fff;
-            padding: 20px;
+            padding: 16px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin: 0 auto; 
+            margin: 0 auto;
+            border-bottom: 1px solid #93E9BE;
+        }
+        form {
+            font-family: 'Segoe UI', sans-serif;
         }
         .create-post-form {
             margin-bottom: 0px;
+            font-family: 'Segoe UI', sans-serif;
             
         }
         .create-post-form input[type="text"] {
             width: calc(100% - 40px); 
+            font-family: 'Segoe UI',  sans-serif;
             padding: 10px 20px; 
             border: 1px solid #ccc;
             border-radius: 4px;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
         .sendPost {
             padding: 10px 20px;
             background-color: #008B8B;
+            font-family: 'Segoe UI', sans-serif;
             color: #fff;
             border: 1px solid #93E9BE; /* seafoam green border */
             border-radius: 4px;
             cursor: pointer;
+            font-weight: bold;
+            box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.25);
         }
 
         .sendPost:hover {
@@ -59,19 +70,24 @@
         .menu {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+            font-family: 'Segoe UI', sans-serif;
         }
-
+        select {
+            font-family: 'Segoe UI', sans-serif;
+            color: #008B8B;
+            border-color: #05696B;
+        }
         #posts .post {
-            font-family: 'Helvetica Neue', sans-serif;
-            border: 1px solid #ddd;
-            padding: 10px;
+            font-family: 'Segoe UI', sans-serif;
+            border: 1px solid #93E9BE;
+            padding: 6px;
             margin-bottom: 10px;
             background-color: #fff;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             max-width: 1000px;
-            margin: 10px auto;
+            margin: 6px auto;
         }
 
         .post h3 {
@@ -95,46 +111,80 @@
             font-size: 18px;
             font-weight: bold;
         }
-        .upvote-button, .downvote-button, .tag-button, .reply-button, .contribute-button {
+        .downvote-button, .submit-tag, .submit-reply {
             background-color: #008B8B; /* madstea */
             color: #fff;
             border: none;
-            padding: 5px 10px;
-            margin: 10px 2px 0;
+            padding: 4px 10px;
+            margin: 4px 3px 0;
             border-radius: 5px;
             cursor: pointer;
-            font-weight: bold;
+            font-family: 'Segoe UI', sans-serif;
             border: 1px solid #93E9BE;
+            box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.25);
         }
 
-        .upvote-button:hover, .downvote-button:hover, .tag-button:hover, .reply-button:hover, .contribute-button:hover {
-            background-color: #05696B; /* darker shade of green on hover */
+        .upvote-button, .tag-button, .reply-button {
+            background-color: #008B8B; /* madstea */
+            color: #fff;
+            border: none;
+            padding: 4px 10px;
+            margin: 4px 3px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: bold;
+            border: 1px solid #93E9BE;
+            box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.25);
+        }
+
+        .upvote-button:hover, .downvote-button:hover, .tag-button:hover, .reply-button:hover, .contribute-button:hover, .submit-tag:hover, .submit-reply:hover {
+            background-color: #05696B; /* dark aqua on hover */
         }
         table {
             width: 100%;
             margin-top: 5px;
         }
-        td {
+
+        tr .one-sixth {
+            width: 16.67%; /* 1/6 of the table width */
             text-align: center;
         }
-        .one-sixth {
-            width: 16.67%; /* 1/6 of the table width */
-        }
 
-        .two-thirds {
+        tr .two-thirds {
             width: 66.66%; /* 2/3 of the table width */
         }
         .post-content img {
             width: 100%;
+            margin: 0;
+            box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.25);
         }
 
         .post-content video, .post-content iframe {
             width: 100%;
             aspect-ratio: 16 / 9;
+            margin: 0;
+            box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.25);
         }
-        .post-content {
-            font-family: Arial;
-            margin: 10px;
+
+        .tag-container img, .tag-container iframe, .tag-container video {
+            max-width: 64px;
+            border-radius: 2px;
+            box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.25);
+        }
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .tag-container a {
+            font-family: 'Segoe UI', Tahoma, Geneva, 'Segoe UI', sans-serif; /* Consistent with the body font */
+            font-size: 20px; /* Larger font size for emphasis */
+            color: #008B8B; /* Using the header background color for text */
+            font-weight: bold; /* Bold font for a more playful look */
+            margin-right: 2px; /* Removed the margin as per your request */
+            margin-left: 2px;
+            text-shadow: 1px 1px 2px rgba(147, 233, 190, 0.7); /* Soft shadow for a bubbly effect */
         }
         h1 a {
             color: #93E9BE;
@@ -156,14 +206,43 @@
       width: 100%;
       height: 800px; /* You can adjust this value */
     }
-        /* Styling for the button in its normal state */
-        #clickableReplies {
-            cursor: pointer;
-            background-color: #dddddd;
-        }
-        /* Styling for the button in its abnormal state */
-        #clickableReplies:hover {
-            cursor: pointer;
-            background-color: #bbb;
-        }
+/* Styling for the clickable replies in its normal state */
+#clickableReplies {
+    cursor: pointer;
+    background-color: transparent; /* Make background transparent */
+    color: #008B8B; /* Use the theme color for the text to match the color scheme */
+    text-decoration: none; /* Remove underline by default */
+    padding: 5px; /* Optional: for easier clickability */
+    font-size: 16px; /* Match the font size to the rest of the design */
+    border: none; /* Remove borders if any */
+}
 
+/* Styling for the clickable replies on hover */
+#clickableReplies:hover {
+    text-decoration: underline; /* Add underline on hover to indicate it's clickable */
+    color: #006767; /* Optional: darken the color on hover for visual feedback */
+}
+
+        .menu a:visited {
+            color: #582C83; /* Replace with your desired shade of sewanee purple */
+        }
+/*man idk if this code belongs*/
+.menu a {
+    color: #008B8B;
+}
+        .postInfo {
+            font-family: 'Segoe UI', sans-serif;
+        }
+        #replyContent {
+            text-align: left;
+        }
+        #noTagMessage {
+            font-family: 'Segoe UI', sans-serif;
+            text-align: center;
+        }
+        .input-field-tag, .input-field-reply {
+            width: 40%; 
+            font-family: 'Segoe UI',  sans-serif;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
