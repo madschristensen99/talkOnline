@@ -192,16 +192,38 @@ contract Forum {
     }
 
     /**
+     * @dev Allows a user to create a new post and tag it simultaneously.
+     * @param content The content of the post.
+     * @param replyId The ID of the post to which this post will reply.
+     * @param tag The tag to be attached to the post.
+     */
+    function createPostWithTag(string calldata content, uint replyId, string calldata tag, uint tagRequirement) public {
+        require(tagContract.ownerOf(uint256(keccak256(abi.encodePacked(tag)))) != address(0), "Tag does not exist");
+        createPost(content, replyId, tagRequirement);
+        tagPost(posts.length - 1, tag); 
+    }
+
+    /**
+     * @dev Allows a user to edit the token requirement threshold for tags on their post
+     * @param postId The ID of the post from which to remove the upvote.
+     * @param requirement The tagRequirement user wants for tags on their post
+     */
+    function editPostRequirement(uint postId, uint requirement) public {
+        require(posts[postId].author == msg.sender, "Author cannot vote on their own post");
+        posts[postId].tagRequirement = requirement;
+    }
+
+    /**
      * @dev Fetches details of a specific post by its ID.
      * @param postId The ID of the post to fetch.
      * @return A tuple containing the post's author, content, pro score, con score, 
-     *         replies, and the post to which it is replying.
+     *         replies, the postID to which it is replying, and tagRequirement.
      */
-    function getPost(uint256 postId) public view returns (address, string memory, uint, uint, uint[] memory, uint) {
+    function getPost(uint256 postId) public view returns (address, string memory, uint, uint, uint[] memory, uint, uint) {
         require(postId < posts.length, "Post does not exist");
 
         Post storage p = posts[postId];
-        return (p.author, p.content, p.proScore, p.conScore, p.replies, p.replyingTo);
+        return (p.author, p.content, p.proScore, p.conScore, p.replies, p.replyingTo, p.tagRequirement);
     }
 
     /**
@@ -271,15 +293,13 @@ contract Forum {
         return posts[postId].proScore;
     }
     /**
-     * @dev Allows a user to create a new post and tag it simultaneously.
-     * @param content The content of the post.
-     * @param replyId The ID of the post to which this post will reply.
-     * @param tag The tag to be attached to the post.
+     * @dev Fetches the post tag requirment
+     * @param postId The ID of the post.
+     * @return The pro score of the post.
      */
-    function createPostWithTag(string calldata content, uint replyId, string calldata tag, uint tagRequirement) public {
-        require(tagContract.ownerOf(uint256(keccak256(abi.encodePacked(tag)))) != address(0), "Tag does not exist");
-        createPost(content, replyId, tagRequirement);
-        tagPost(posts.length - 1, tag); 
+    function getPostTagRequirement(uint256 postId) public view returns (uint) {
+        require(postId < posts.length, "Post does not exist");
+        return posts[postId].tagRequirement;
     }
 
 }
