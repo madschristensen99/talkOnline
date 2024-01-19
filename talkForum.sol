@@ -38,6 +38,7 @@ contract Forum {
         uint proScore;
         uint conScore;
         uint tagRequirement;
+        uint timeOfPost;
     }
 
     Post[] public posts;
@@ -89,6 +90,7 @@ contract Forum {
         newPost.proScore = 0;
         newPost.conScore = 0;
         newPost.tagRequirement = tagRequirement;
+        newPost.timeOfPost = block.timestamp;
 
         emit PostCreated(postNumber);
     }
@@ -306,7 +308,7 @@ contract Forum {
             scores[i] = posts[replyIds[i]].proScore;
         }
 
-        // Simple Bubble Sort (not recommended for large datasets)
+        // Simple Bubble Sort
         for (uint i = 0; i < length; i++) {
             for (uint j = i + 1; j < length; j++) {
                 if (scores[j] > scores[i]) {
@@ -340,7 +342,7 @@ contract Forum {
             scores[i] = posts[replyIds[i]].conScore;
         }
 
-        // Simple Bubble Sort (not recommended for large datasets)
+        // Simple Bubble Sort
         for (uint i = 0; i < length; i++) {
             for (uint j = i + 1; j < length; j++) {
                 if (scores[j] > scores[i]) {
