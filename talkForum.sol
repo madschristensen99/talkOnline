@@ -46,7 +46,7 @@ contract Forum {
     Tag public tagContract;
 
     event PostCreated(uint indexed postID);
-    event PostTagged(uint indexed postId, string indexed tagId, address indexed tagger, string tagName, string modify);
+    event PostTagged(uint indexed postId, string indexed tagId, address indexed tagger, string tagName);
     event PostEdited(uint indexed postId);
     event PostLiked(uint indexed postID, address indexed liker, uint postIDs, address personWhoLiked);
     event PostDisliked(uint indexed postID, address indexed disliker, uint postIDs, address personWhoLiked);
@@ -104,7 +104,8 @@ contract Forum {
         require(postId < posts.length, "Post does not exist");
         require(talkContract.balanceOf(msg.sender) >= tagContract.getTokenRequirement(tagContent), "Must hold more TALK tokens.");
         require(!posts[postId].taggedByUser[msg.sender][id], "You already tagged this");
-        require(posts[postId].tagRequirement < tagContract.getTokenRequirement(tagContent));
+        // TODO: make it so that post owners can set a threshold for the tags they will allow on thier post
+       // require(posts[postId].tagRequirement < tagContract.getTokenRequirement(tagContent));
 
         uint256 fee = tagContract.getFee(tagContent);
 
@@ -112,9 +113,7 @@ contract Forum {
             talkContract.transferFrom(msg.sender, tagContract.ownerOf(id), fee);
         }
         posts[postId].taggedByUser[msg.sender][id] = true;
-        // holy moly i gotta admit this is an odd line of code but this is how you fetch a single element from a tuple and return it
-        ( , , string memory modifiableField, ) = tagContract.getTagDetails(tagContent);
-        emit PostTagged(postId, tagContent, msg.sender, tagContent, modifiableField);
+        emit PostTagged(postId, tagContent, msg.sender, tagContent);
     }
 
     /**
@@ -192,32 +191,10 @@ contract Forum {
     }
 
     /**
-     * @dev Allows a user to create a new post and tag it simultaneously.
-     * @param content The content of the post.
-     * @param replyId The ID of the post to which this post will reply.
-     * @param tag The tag to be attached to the post.
-     */
-    function createPostWithTag(string calldata content, uint replyId, string calldata tag, uint tagRequirement) public {
-        require(tagContract.ownerOf(uint256(keccak256(abi.encodePacked(tag)))) != address(0), "Tag does not exist");
-        createPost(content, replyId, tagRequirement);
-        tagPost(posts.length - 1, tag); 
-    }
-
-    /**
-     * @dev Allows a user to edit the token requirement threshold for tags on their post
-     * @param postId The ID of the post from which to remove the upvote.
-     * @param requirement The tagRequirement user wants for tags on their post
-     */
-    function editPostRequirement(uint postId, uint requirement) public {
-        require(posts[postId].author == msg.sender, "Author cannot vote on their own post");
-        posts[postId].tagRequirement = requirement;
-    }
-
-    /**
      * @dev Fetches details of a specific post by its ID.
      * @param postId The ID of the post to fetch.
      * @return A tuple containing the post's author, content, pro score, con score, 
-     *         replies, the postID to which it is replying, and tagRequirement.
+     *         replies, and the post to which it is replying.
      */
     function getPost(uint256 postId) public view returns (address, string memory, uint, uint, uint[] memory, uint, uint) {
         require(postId < posts.length, "Post does not exist");
@@ -293,13 +270,93 @@ contract Forum {
         return posts[postId].proScore;
     }
     /**
-     * @dev Fetches the post tag requirment
-     * @param postId The ID of the post.
-     * @return The pro score of the post.
+     * @dev Allows a user to create a new post and tag it simultaneously.
+     * @param content The content of the post.
+     * @param replyId The ID of the post to which this post will reply.
+     * @param tag The tag to be attached to the post.
      */
-    function getPostTagRequirement(uint256 postId) public view returns (uint) {
-        require(postId < posts.length, "Post does not exist");
-        return posts[postId].tagRequirement;
+     // TODO: make it accept an array of tags
+    function createPostWithTag(string calldata content, uint replyId, string calldata tag, uint tagRequirement) public {
+        require(tagContract.ownerOf(uint256(keccak256(abi.encodePacked(tag)))) != address(0), "Tag does not exist");
+        createPost(content, replyId, tagRequirement);
+        tagPost(posts.length - 1, tag); 
+    }
+    // TODO: make post tag requirement modifiable
+    /**
+     * @dev Allows a user to curate the prestige of tags on the post
+     * @param postID The ID of the post.
+     */
+    function curateTagRequirement(uint postID) public {
+        // require msg.sender is the post owner
+        // make change
     }
 
+    /**
+     * @dev Returns the IDs of replies to a post, sorted by proScores.
+     * @param opId The ID of the original post.
+     * @return An array of reply post IDs sorted by their proScores.
+     */
+    function returnProAlgo(uint opId) public view returns (uint[] memory) {
+        uint[] memory replyIds = getPostReplies(opId);
+        uint length = replyIds.length;
+        uint[] memory scores = new uint[](length);
+
+        // Populate the scores array
+        for (uint i = 0; i < length; i++) {
+            scores[i] = posts[replyIds[i]].proScore;
+        }
+
+        // Simple Bubble Sort (not recommended for large datasets)
+        for (uint i = 0; i < length; i++) {
+            for (uint j = i + 1; j < length; j++) {
+                if (scores[j] > scores[i]) {
+                    // Swap scores
+                    uint tempScore = scores[i];
+                    scores[i] = scores[j];
+                    scores[j] = tempScore;
+
+                    // Swap corresponding reply IDs
+                    uint tempId = replyIds[i];
+                    replyIds[i] = replyIds[j];
+                    replyIds[j] = tempId;
+                }
+            }
+        }
+
+        return replyIds;
+    }
+    /**
+     * @dev Returns the IDs of replies to a post, sorted by conScores.
+     * @param opId The ID of the original post.
+     * @return An array of reply post IDs sorted by their conScores.
+     */
+    function returnConAlgo(uint opId) public view returns (uint[] memory) {
+        uint[] memory replyIds = getPostReplies(opId);
+        uint length = replyIds.length;
+        uint[] memory scores = new uint[](length);
+
+        // Populate the scores array
+        for (uint i = 0; i < length; i++) {
+            scores[i] = posts[replyIds[i]].conScore;
+        }
+
+        // Simple Bubble Sort (not recommended for large datasets)
+        for (uint i = 0; i < length; i++) {
+            for (uint j = i + 1; j < length; j++) {
+                if (scores[j] > scores[i]) {
+                    // Swap scores
+                    uint tempScore = scores[i];
+                    scores[i] = scores[j];
+                    scores[j] = tempScore;
+
+                    // Swap corresponding reply IDs
+                    uint tempId = replyIds[i];
+                    replyIds[i] = replyIds[j];
+                    replyIds[j] = tempId;
+                }
+            }
+        }
+
+        return replyIds;
+    }
 }
