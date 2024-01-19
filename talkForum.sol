@@ -4,8 +4,6 @@
 
 This contract is part of a system designed to offer a new way to form communities, collaborate on projects, and combine forces to defeat evil. 
 
-Tag deploys TAG, an ERC721 contract allowing holders of TALK to mint TAG, and allowing TAG owners certain permissions.
-
 */
 
 pragma solidity ^0.8.0;
@@ -223,17 +221,17 @@ contract Forum {
         if (initReplies.length == 0) {
             return new uint[](0);
         }
+        // Check if all replies are newer than the age threshold
+        if (initReplies[0] > ageThreshold) {
+            return initReplies;
+        }
 
+        // Iterates in reverse order, seems like that'll be the efficient way to do it most of the time.
         uint minIndex = initReplies.length - 1;
         while (minIndex > 0 && initReplies[minIndex] > ageThreshold) {
             minIndex--;
         }
     
-        // Check if all replies are older than the age threshold
-        if (initReplies[minIndex] > ageThreshold) {
-            return initReplies;
-        }
-
         uint newLength = initReplies.length - minIndex;
         uint[] memory result = new uint[](newLength);
         for (uint i = 0; i < newLength; i++) {
