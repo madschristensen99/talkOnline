@@ -194,11 +194,11 @@ contract Forum {
      * @return A tuple containing the post's author, content, pro score, con score, 
      *         replies, and the post to which it is replying.
      */
-    function getPost(uint256 postId) public view returns (address, string memory, uint, uint, uint[] memory, uint) {
+    function getPost(uint256 postId) public view returns (address, string memory, uint, uint, uint[] memory, uint, uint) {
         require(postId < posts.length, "Post does not exist");
 
         Post storage p = posts[postId];
-        return (p.author, p.content, p.proScore, p.conScore, p.replies, p.replyingTo);
+        return (p.author, p.content, p.proScore, p.conScore, p.replies, p.replyingTo, p.timeOfPost);
     }
 
     /**
