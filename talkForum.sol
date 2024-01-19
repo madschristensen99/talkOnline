@@ -231,7 +231,7 @@ contract Forum {
     
         // Check if all replies are older than the age threshold
         if (initReplies[minIndex] > ageThreshold) {
-            return new uint[](0);
+            return initReplies;
         }
 
         uint newLength = initReplies.length - minIndex;
