@@ -37,7 +37,6 @@ contract Forum {
         mapping(address => uint) downvotes;
         uint proScore;
         uint conScore;
-        uint tagRequirement;
         uint timeOfPost;
     }
 
@@ -77,7 +76,7 @@ contract Forum {
      * @param replyId The ID of the post to which this post is a reply.
      * if it's a new thread, the replyId points to post 0
      */
-    function createPost(string calldata content, uint replyId, uint tagRequirement) public {
+    function createPost(string calldata content, uint replyId) public {
         require(bytes(content).length > 0, "Content field cannot be empty");
         require(replyId < posts.length, "Invalid reply ID");
         Post storage newPost = posts.push();
@@ -89,7 +88,6 @@ contract Forum {
         newPost.replyingTo = replyId;
         newPost.proScore = 0;
         newPost.conScore = 0;
-        newPost.tagRequirement = tagRequirement;
         newPost.timeOfPost = block.timestamp;
 
         emit PostCreated(postNumber);
@@ -106,8 +104,6 @@ contract Forum {
         require(postId < posts.length, "Post does not exist");
         require(talkContract.balanceOf(msg.sender) >= tagContract.getTokenRequirement(tagContent), "Must hold more TALK tokens.");
         require(!posts[postId].taggedByUser[msg.sender][id], "You already tagged this");
-        // TODO: make it so that post owners can set a threshold for the tags they will allow on thier post
-       // require(posts[postId].tagRequirement < tagContract.getTokenRequirement(tagContent));
 
         uint256 fee = tagContract.getFee(tagContent);
 
@@ -198,11 +194,11 @@ contract Forum {
      * @return A tuple containing the post's author, content, pro score, con score, 
      *         replies, and the post to which it is replying.
      */
-    function getPost(uint256 postId) public view returns (address, string memory, uint, uint, uint[] memory, uint, uint) {
+    function getPost(uint256 postId) public view returns (address, string memory, uint, uint, uint[] memory, uint) {
         require(postId < posts.length, "Post does not exist");
 
         Post storage p = posts[postId];
-        return (p.author, p.content, p.proScore, p.conScore, p.replies, p.replyingTo, p.tagRequirement);
+        return (p.author, p.content, p.proScore, p.conScore, p.replies, p.replyingTo);
     }
 
     /**
@@ -214,14 +210,39 @@ contract Forum {
     }
 
     /**
-     * @dev Fetches the reply post IDs of a specific post.
-     * @param postId The ID of the post for which to fetch replies.
-     * @return An array containing the IDs of the replies.
-     */
-    function getPostReplies(uint256 postId) public view returns (uint[] memory) {
+    * @dev Fetches the reply post IDs of a specific post.
+    * @param postId The ID of the post for which to fetch replies.
+    * @param ageThreshold The postID threshold for which replies should be included.
+    * @return An array containing the IDs of the replies.
+    */
+    function getPostReplies(uint256 postId, uint ageThreshold) public view returns (uint[] memory) {
         require(postId < posts.length, "Post does not exist");
-        return posts[postId].replies;
+        require(ageThreshold < posts.length, "Age threshold too high");
+
+        uint[] memory initReplies = posts[postId].replies;
+        if (initReplies.length == 0) {
+            return new uint[](0);
+        }
+
+        uint minIndex = initReplies.length - 1;
+        while (minIndex > 0 && initReplies[minIndex] > ageThreshold) {
+            minIndex--;
+        }
+    
+        // Check if all replies are older than the age threshold
+        if (initReplies[minIndex] > ageThreshold) {
+            return new uint[](0);
+        }
+
+        uint newLength = initReplies.length - minIndex;
+        uint[] memory result = new uint[](newLength);
+        for (uint i = 0; i < newLength; i++) {
+            result[i] = initReplies[minIndex + i];
+        }
+
+        return result;
     }
+
     /**
      * @dev Fetches the post ID to which a specific post is replying.
      * @param postId The ID of the post for which to find the replied-to post.
@@ -272,25 +293,24 @@ contract Forum {
         return posts[postId].proScore;
     }
     /**
-     * @dev Allows a user to create a new post and tag it simultaneously.
-     * @param content The content of the post.
-     * @param replyId The ID of the post to which this post will reply.
-     * @param tag The tag to be attached to the post.
-     */
-     // TODO: make it accept an array of tags
-    function createPostWithTag(string calldata content, uint replyId, string calldata tag, uint tagRequirement) public {
-        require(tagContract.ownerOf(uint256(keccak256(abi.encodePacked(tag)))) != address(0), "Tag does not exist");
-        createPost(content, replyId, tagRequirement);
-        tagPost(posts.length - 1, tag); 
-    }
-    // TODO: make post tag requirement modifiable
-    /**
-     * @dev Allows a user to curate the prestige of tags on the post
-     * @param postID The ID of the post.
-     */
-    function curateTagRequirement(uint postID) public {
-        // require msg.sender is the post owner
-        // make change
+    * @dev Allows a user to create a new post and tag it simultaneously.
+    * @param content The content of the post.
+    * @param replyId The ID of the post to which this post will reply.
+    * @param tags The array of tags to be attached to the post.
+    */
+    function createPostWithTags(string calldata content, uint replyId, string[] calldata tags) public {
+        // Create the post first
+        createPost(content, replyId);
+        uint256 postId = posts.length - 1;
+
+        // Iterate over each tag and tag the post
+        for (uint i = 0; i < tags.length; i++) {
+            // Check if the tag exists
+            require(tagContract.ownerOf(uint256(keccak256(abi.encodePacked(tags[i])))) != address(0), "Tag does not exist");
+
+            // Tag the post with the current tag
+            tagPost(postId, tags[i]);
+        }
     }
 
     /**
@@ -298,8 +318,8 @@ contract Forum {
      * @param opId The ID of the original post.
      * @return An array of reply post IDs sorted by their proScores.
      */
-    function returnProAlgo(uint opId) public view returns (uint[] memory) {
-        uint[] memory replyIds = getPostReplies(opId);
+    function returnProAlgo(uint opId, uint ageThreshold) public view returns (uint[] memory) {
+        uint[] memory replyIds = getPostReplies(opId, ageThreshold);
         uint length = replyIds.length;
         uint[] memory scores = new uint[](length);
 
@@ -332,8 +352,8 @@ contract Forum {
      * @param opId The ID of the original post.
      * @return An array of reply post IDs sorted by their conScores.
      */
-    function returnConAlgo(uint opId) public view returns (uint[] memory) {
-        uint[] memory replyIds = getPostReplies(opId);
+    function returnConAlgo(uint opId, uint ageThreshold) public view returns (uint[] memory) {
+        uint[] memory replyIds = getPostReplies(opId, ageThreshold);
         uint length = replyIds.length;
         uint[] memory scores = new uint[](length);
 
