@@ -198,7 +198,35 @@ contract Forum {
         Post storage p = posts[postId];
         return (p.author, p.content, p.proScore, p.conScore, p.replies, p.replyingTo, p.timeOfPost);
     }
+    /**
+    * @dev Structure to hold post details, for batch retrieval.
+    */
+    struct PostDetails {
+        address author;
+        string content;
+        uint proScore;
+        uint conScore;
+        uint[] replies;
+        uint replyingTo;
+        uint timeOfPost;
+    }
+    /**
+    * @dev Fetches details of specific posts by their IDs.
+    * @param postIds An array of post IDs to fetch.
+    * @return An array of tuples, each containing a post's author, content, pro score, con score, 
+    *         replies, the post to which it is replying, and the time of the post.
+    */
+    function getPosts(uint256[] calldata postIds) public view returns (PostDetails[] memory) {
+        PostDetails[] memory postsDetails = new PostDetails[](postIds.length);
 
+        for (uint i = 0; i < postIds.length; i++) {
+            require(postIds[i] < posts.length, "Post does not exist");
+            Post storage p = posts[postIds[i]];
+            postsDetails[i] = PostDetails(p.author, p.content, p.proScore, p.conScore, p.replies, p.replyingTo, p.timeOfPost);
+        }
+
+        return postsDetails;
+    }
     /**
      * @dev Fetches the current number of posts in the forum.
      * @return The length of the posts array.
@@ -376,7 +404,6 @@ contract Forum {
                 }
             }
         }
-
         return replyIds;
     }
 }
