@@ -3,92 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>Tokenomics and Utility</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Web3 Social Media</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <header>
+        <div style="position: absolute; left: 10px;">
+            <a href="https://talk.online/" style="text-decoration: none; color: inherit; display: inline-flex;">
+                <i class="fa-solid fa-arrow-left" style="margin-right: 10px;"></i>
+            </a>
+        </div>
         TALK
     </header>
-    <main>
-        <!-- Token Description Section -->
-        <section>
-            <h2>About the Token</h2>
-            <p>Our token, powered by innovative tokenomics allows people on the internet to own and control their communities for themselves.</p>
-            <!-- Add more details here -->
-        </section>
 
-        <!-- Purchase Options -->
+    <div class="container">
+        <div class="menu">
+
+                <a href="https://polygonscan.com/token/0xdb3643766a0e2a8e7c2ff5f86d36c082a6a4304b" target="_blank">Polygonscan</a>
+                <a href="https://quickswap.exchange/#/swap?swapIndex=1&currency0=ETH&currency1=0xDb3643766A0e2a8E7C2fF5F86D36c082A6a4304B" target="_blank">Trade</a>
+                <a href="./faq.html">FAQ</a>
+                <a href="../Whitepaper.pdf" target="_blank">Whitepaper</a>
+
+        </div>
+        
         <section>
-            <h2>Purchase Tokens</h2>
-            <div>
-                Our token sale is beginning...
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/fWlrt8iZDWQ?si=Wbhj1LurdTTuyEUA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            <h2>Talk Online offers a new way to form communities, collaborate on projects, and combine forces to defeat evil.</h2>
+            To do this, TALK, a token with a fixed supply of 100 million, provides a weighted voting mechanism for owners to score posts within social smart contracts on the Polygon blockchain. 
+            <button id="addTalkTokenButton" class = "downvote-button">Add TALK Token to Wallet</button><br>
+            <div id = "youHold">
+                You Hold:
+            </div>
+            <label for="recipient">Recipient Address:</label>
+            <input id="recipient" type="text" placeholder="Enter Recipient Address"/>
+            <label for="amount">Amount:</label>
+            <input id="amount" type="number" placeholder="Enter Token Amount"/>
+            <div id="errorContainer" style="color: red;"></div>
+            <button id ="sendTokensButton" class = "downvote-button">Send Tokens</button><br><br>
+            <button id="buyTalkSmall" class = "downvote-button">Buy .01 MATIC worth of TALK</button>
+            <button id="buyTalkMedium" class = "downvote-button">Buy .2 MATIC worth of TALK</button>
+            <button id="buyTalkLarge" class = "downvote-button">Buy 5 MATIC worth of TALK</button>
+
+            <script type="module">
+                import { ethers } from "../ethers.min.js";
+                import { tokenAddress, tokenAbi } from './constants.js';
+
+                let provider = new ethers.providers.Web3Provider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                const signer = provider.getSigner();
+                const tokenContract = new ethers.Contract(tokenAddress, tokenAbi, signer);
+
+                const balance = await tokenContract.balanceOf(await signer.getAddress());
+                document.getElementById("youHold").innerHTML += balance.toString() / (10 ** 18);
+
+document.getElementById('sendTokensButton').addEventListener('click', async () => {
+    // Get the recipient address and amount from input fields
+    const recipientAddress = document.getElementById('recipient').value.trim();
+    const tokenAmount = document.getElementById("amount").value; // This is a string
+
+    // Ensure the values are valid before sending
+    if (ethers.utils.isAddress(recipientAddress) && tokenAmount > 0) {
+        try {
+            // Convert token amount to BigNumber format with 18 decimals
+            const tokenAmountBigNumber = ethers.utils.parseUnits(tokenAmount, 18);
+
+            const tx = await tokenContract.transfer(recipientAddress, tokenAmountBigNumber);
+            console.log(`Transaction hash: ${tx.hash}`);
+            await tx.wait();
+            console.log('Transaction confirmed');
+            // Optionally, clear the form or give success feedback
+        } catch (error) {
+            console.error('Error sending tokens:', error);
+            let errorMessage = 'An unexpected error occurred.';
+            // Check if the error message contains the specific string
+            if (error.data && error.data.message && error.data.message.includes("Too soon since last participation")) {
+                errorMessage = 'You must wait 24 hours after scoring to transfer TALK tokens';
+            }
+            // Display the error message on the page
+            document.getElementById("errorContainer").innerText = errorMessage; // Make sure you have an element with the id "errorContainer" in your HTML
+        }
+    } else {
+        console.error('Invalid recipient address or amount.');
+        document.getElementById("errorContainer").innerText = 'Invalid recipient address or amount.'; // Display this error message too
+    }
+});
+
+                // Function to add TALK Token to the user's wallet
+                document.getElementById('addTalkTokenButton').addEventListener('click', async () => {
+                    try {
+                        await provider.send('wallet_watchAsset', {
+                            type: 'ERC20',
+                            options: {
+                                address: tokenAddress, // TALK Token Contract Address
+                                symbol: 'TALK', // Symbol
+                                decimals: 18, // Assuming 18 decimals for TALK token
+                                image: 'https://i.postimg.cc/MZCQ5Fv9/IMG-2231-200x200.jpg', // Image URL for TALK token
+                            },
+                        });
+                        console.log('TALK token added to wallet!');
+                    } catch (error) {
+                        console.error('Failed to add TALK token to wallet:', error);
+                    }
+                });
+// Example placeholders - replace with your actual contract address and ABI
+const exchangeAddress = '0xC1d39ca2923Ee824DD5C848BE69657F6D6E1a562';
+const exchangeAbi = [
+	{
+		"inputs": [],
+		"name": "buyTokens",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_talkTokenAddress",
+				"type": "address"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "buyer",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amountOfMATIC",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amountOfTALK",
+				"type": "uint256"
+			}
+		],
+		"name": "TokensPurchased",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_newRate",
+				"type": "uint256"
+			}
+		],
+		"name": "updateRate",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "withdrawMATIC",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_amount",
+				"type": "uint256"
+			}
+		],
+		"name": "withdrawTALK",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"stateMutability": "payable",
+		"type": "receive"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "rateMaticToTalk",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "talkToken",
+		"outputs": [
+			{
+				"internalType": "contract IERC20",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
+
+const exchangeContract = new ethers.Contract(exchangeAddress, exchangeAbi, signer);
+
+// Function to buy TALK with specified amount of MATIC
+async function buyTalk(amountInMatic) {
+    const options = { value: ethers.utils.parseEther(amountInMatic.toString()) };
+    try {
+        const tx = await exchangeContract.buyTokens(options);
+        console.log(`Buying TALK... Transaction hash: ${tx.hash}`);
+        await tx.wait();
+        console.log('TALK purchase confirmed');
+    } catch (error) {
+        console.error('Error buying TALK:', error);
+    }
+}
+
+document.getElementById('buyTalkSmall').addEventListener('click', () => buyTalk(0.01));
+document.getElementById('buyTalkMedium').addEventListener('click', () => buyTalk(0.2));
+document.getElementById('buyTalkLarge').addEventListener('click', () => buyTalk(5));
+
+// We are looking to add Forum Analytics section here. (Number of posts, most popular creators, ...)
+
+            </script>
+            <br>
+            <br>
+            
+            <div style="text-align: center;">
+                QR code to buy TALK:
+                <br>
+                <img src="https://talk.online/images/qr.png">
             </div>
         </section>
-
-
-        <!-- ERC20 Basic Interactions -->
-<!-- ERC20 Basic Interactions -->
-<section>
-    <h2>Token Interactions</h2>
-    <div id = "youHold">
-        You Hold:
     </div>
-    <label for="recipient">Recipient Address:</label>
-    <input id="recipient" type="text" placeholder="Enter Recipient Address"/>
-    <label for="amount">Amount:</label>
-    <input id="amount" type="number" placeholder="Enter Token Amount"/>
-    <button id ="sendTokensButton">Send Tokens</button>
-    <script type="module">
-        import { ethers } from "./ethers.min.js";
-        import { tokenAddress, tokenAbi } from './mainnet/constants.js';
-
-        let provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        const signer = provider.getSigner();
-        const tokenContract = new ethers.Contract(tokenAddress, tokenAbi, signer);
-        console.log(tokenContract);
-        console.log(await signer.getAddress());
-        const balance = await tokenContract.balanceOf(signer.getAddress());
-        console.log("Sender's balance:", balance.toString());
-        document.getElementById("youHold").innerHTML += balance.toString();
-        const canTransfer = await tokenContract.canTransfer(signer.getAddress());
-        console.log(canTransfer);
-        
-        document.getElementById("holdDuration").innerHTML += canTransfer.toString();
-        document.getElementById('sendTokensButton').addEventListener('click', async () => {
-            // Get the recipient address and amount from input fields
-            const recipientAddress = document.getElementById('recipient').value.trim();
-            const tokenAmount = document.getElementById("amount").value;
-            console.log(tokenAmount);
-            // Ensure the values are valid before sending
-            if (ethers.utils.isAddress(recipientAddress)) {
-                try {
-                    const tx = await tokenContract.transfer(recipientAddress, tokenAmount);
-                    console.log(`Transaction hash: ${tx.hash}`);
-                    await tx.wait();
-                    console.log('Transaction confirmed');
-                } catch (error) {
-                    console.error('Error sending tokens:', error);
-                }
-            } else {
-                console.error('Invalid recipient address or amount.');
-            }
-        });
-        
-    </script>
-</section>
-
-        <!-- View HODL Time -->
-        <section>
-            <h2>Check Hold Duration</h2>
-            <p id="holdDuration">We require tokens to be held for 24 hours after forum participations. You can transfer?: </p>
-        </section>
-        <h2>Whitepaper</h2>
-        <div class="pdf-container">
-            <iframe src="Whitepaper.pdf"></iframe>
+    <section>
+        <div id = "posts">
         </div>
-    </main>
+    </section>
+    <script type = "module">
+    </script>
 </body>
 </html>
