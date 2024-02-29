@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web3 Social Media</title>
+
     <link rel="stylesheet" href="./style.css">
-    <link href='https://fonts.googleapis.com/css?family=Orbitron' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="./blockies_test/blockies.js"></script>
 </head>
 <body>
     <header>Talk Online</header>
@@ -13,247 +15,136 @@
     <div class="container">
         <div class="menu">
 
-                <a href="./account.html">Account</a>
-                <a href="./tags.html">Tags</a>
-                <a href="./token.html">TALK</a>
+                <a href="./polygon/account.html">Account</a>
+                <a href="./polygon/tags.html">Tags</a>
+                <a href="./polygon/token.html">TALK</a>
                 <select name="options" id="options">
                     <option value="new">New</option>
                     <option value="popular">Popular</option>
                     <option value="random">Random</option>
                     <option value="recommended">Recommended</option>
+                    <option value="newUnf">New (Unfiltered)</option>
+                    <option value="garbage">Garbage</option>
                 </select>
 
         </div>
         
         <form class="create-post-form" id="createPost">
-            <input type="text" placeholder="Post a link! Say something." id = "post-content">
-            <button class="sendPost" >Send it</button>
+            <br>
         </form>
-
+        
     </div>
+
     <div id = "posts">
-        <img src = "https://media.tenor.com/JBgYqrobdxsAAAAi/loading.gif" style = "display: block; margin-left: auto; margin-right: auto">
+        <img src = "./loadTalk.gif" style = "display: block; margin-left: auto; margin-right: auto" id = "loadingGif" class = "loading">
     </div>
             <script type = "module">
-                // TODO: modulate/functionalize code
-                // TODO: format replies
+            
+
                 // TODO: format tagging
+                // <button style="border-radius: 50%; border: 1px solid #93E9BE; background-color: #008b8b; padding: 10px 15px; display: inline-flex; align-items: center; justify-content: center;"><i class="fa-solid fa-tag" style="color: white; font-size: 12px;"></i></button>
                 // Save the selected algorithm to localStorage when it changes
                 document.getElementById('options').addEventListener('change', function() {
                     localStorage.setItem('selectedAlgo', this.value);
+
+                    location.reload();
+
                 });
 
-                // Retrieve the selected algorithm from localStorage on page load
-                document.addEventListener('DOMContentLoaded', function() {
-                    var selectedAlgo = localStorage.getItem('selectedAlgo');
-                    if (selectedAlgo) {
-                        document.getElementById('options').value = selectedAlgo;
-                    }
-                });
+                var selectedAlgo = localStorage.getItem('selectedAlgo');
+                if (selectedAlgo) {
+                    document.getElementById('options').value = selectedAlgo;
+                }
+
+
                 import { ethers } from "./ethers.min.js";
-                import { forumAddress, forumAbi, tagAddress, tagAbi, tokenAddress, tokenAbi } from './mainnet/constants.js';
-                import { getENSName, isURL, getFileType, handleURL, formatDateForDisplay } from './helpers.js';
+                // TODO: why no importing punk abi and address work on safari?
+                import { forumAddress, forumAbi, tagAddress, tagAbi, tokenAddress, tokenAbi } from './polygon/constants.js';
+                import { getENSName, isURL, getFileType, handleURL, formatDateForDisplay, buttonMaker, fetchReplies, fetchTags, loadContent, activateContent} from './polygon/helpers.js';
+                import { enableAlgo } from './polygon/algo.js';
+
                 // A Web3Provider wraps a standard Web3 provider, which is
                 // what MetaMask injects as window.ethereum into each page
-                // function displayContent
-                async function enableAlgo (algoChosen, contractObject){
-                    // TODO: improve algos
-                    let og = await contractObject.getPost(0);
-                    console.log(algoChosen);
-                    let forumLength = og[4].length;
-                    if(algoChosen == "new"){
-                        let OPs = og[4];
-                        let returnObj = parseInt(OPs[OPs.length - 1]._hex, 16);
-                        let returnable;
-                        if (forumLength > 7){
-                            return [returnObj, parseInt(OPs[OPs.length - 2]._hex, 16), parseInt(OPs[OPs.length - 3]._hex, 16), parseInt(OPs[OPs.length - 4]._hex, 16), parseInt(OPs[OPs.length - 5]._hex, 16), parseInt(OPs[OPs.length - 6]._hex, 16), parseInt(OPs[OPs.length - 7]._hex, 16), parseInt(OPs[OPs.length - 8]._hex, 16)];
+
+                let provider;
+                if(window.ethereum){
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                    let signer;
+                    try{
+                        let network = await provider.getNetwork();
+                        if (network.chainId == 137) {
+                            // MetaMask requires requesting permission to connect users accounts
+                            await provider.send("eth_requestAccounts", []);
+                            // The MetaMask plugin also allows signing transactions to
+                            // send ether and pay to change state within the blockchain.
+                            // For this, you need the account signer...
+                            signer = provider.getSigner();document.getElementById("createPost").innerHTML = `<input type="text" placeholder="Post a link! Say something." id = "post-content"> <button class="sendPost" >Send it</button>`;
                         }
-                        // TODO: loop to populate most recent post based on op.length, iterate through the end op and add a int to the system to track so that way post continously get older
-                        returnable = [0, 1, 7, 2, 5, 4, 8, 9];
-                        return returnable;
+                        else{
+                            provider = new ethers.providers.JsonRpcProvider("https://polygon-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
+                            document.getElementById("createPost").innerHTML = "Please switch your network to Polygon";
+                        }  
+
                     }
-                    else if(algoChosen == "recommended"){
-                        console.log("recommended");
+                    catch(error){
+                        provider = new ethers.providers.JsonRpcProvider("https://polygon-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
+                        console.log(provider);
+                        document.getElementById("createPost").innerHTML = "Unable to detect network";
                     }
-                    else if(algoChosen == "random"){
-                        console.log("random");
-                        let OPs = og[4];
-                        let returnable = [parseInt(OPs[Math.trunc(Math.random() * forumLength)]), parseInt(OPs[Math.trunc(Math.random() * forumLength)]), parseInt(OPs[Math.trunc(Math.random() * forumLength)]), parseInt(OPs[Math.trunc(Math.random() * forumLength)]), parseInt(OPs[Math.trunc(Math.random() * forumLength)]), parseInt(OPs[Math.trunc(Math.random() * forumLength)]), parseInt(OPs[Math.trunc(Math.random() * forumLength)]), parseInt(OPs[Math.trunc(Math.random() * forumLength)])];
-                        return returnable;
-                    }
-                    else if(algoChosen == "popular"){
-                        console.log("popular");
-                    }
-                    let arr = [0, 1, 2, 0, 0, 0, 0, 0];
-                    return arr;
+                    
+                    const forumViewer = new ethers.Contract(forumAddress, forumAbi, provider);
+                    const tagViewer = new ethers.Contract(tagAddress, tagAbi, provider);
+                    //const punkViewer = new ethers.Contract(punkAddress, punkAbi, provider);
+                    displayContent(forumViewer, "posts", tagViewer);
+                    const contractSigner = new ethers.Contract(forumAddress, forumAbi, signer);
+                    activateContent(contractSigner);
                 }
-                async function buttonMaker(){
-                    let output = `<footer id = \"givenPostsFooter\"><button class=\"upvote-button\">^</button><button class=\"downvote-button\">v</button><button class=\"tag-button\">Add Tag</button><button class=\"reply-button\">Reply</button>` +
-                        `<div class="input-tag" hidden><input type="text" class="input-field-tag" placeholder="Enter Tag name"><button class="submit-tag">Submit</button></div></footer>`+
-                        `<div class="input-reply" hidden><input type="text" class="input-field-reply" placeholder="Enter your reply..."><button class="submit-reply">Submit</button></div></footer>`;
-                    return output;
+                else{
+                    document.getElementById("createPost").innerHTML = "Sign in with a <a href = \"./web3.html\">Web3 provider</a>";
+                    provider = new ethers.providers.JsonRpcProvider("https://polygon-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
+                    const forumViewer = new ethers.Contract(forumAddress, forumAbi, provider);
+                    const tagViewer = new ethers.Contract(tagAddress, tagAbi, provider);
+                    displayContent(forumViewer, "posts", tagViewer);
                 }
-                async function activateContent(signer){
-                    document.getElementById('createPost').addEventListener('submit', async (e) => {
-                        // Prevent the default form submission
-                        e.preventDefault();
 
-                        // Get the post content from the textarea
-                        const postContent = document.getElementById('post-content').value;
-
-                        if (!postContent.trim()) {
-                            alert("Post content is empty. Please write something.");
-                            return;
-                        }
-
-                        // Create a new post by calling the `createPost` function on the contract
-                        const forumContract = new ethers.Contract(forumAddress, forumAbi, signer);
-                        try {
-                            // Send the transaction and wait for it to be mined
-                            let tx = await forumContract.createPost(postContent, 0);
-                            let receipt = await tx.wait();
-                            console.log('Transaction has been mined: ', receipt.transactionHash);
-                            // Clear the textarea after successful post creation
-                            document.getElementById('post-content').value = '';
-                        } catch (error) {
-                            // Handle any errors
-                            console.error('An error occurred:', error);
-                        }
-                    });
-
-                    document.addEventListener('click', async (e) => {
-                        const postElement = e.target.closest('article');  // Find the parent article
+                document.getElementById('posts').addEventListener('click', async (event) => {
+                    if (event.target.id === 'clickableReplies') {
+                        let repliesElement = event.target.closest('tr');
+                        let firstTdHTML = repliesElement.querySelector('td:first-child').outerHTML;
+                        const forumContract = new ethers.Contract(forumAddress, forumAbi, provider);
+                        const postElement = event.target.closest('article');
                         if (!postElement) return;  // If clicked outside a post, exit
                         // Fetch the post ID from the link in the post header
                         const postIDLink = postElement.querySelector('h1 a');
                         if (!postIDLink) return;  // If the link isn't found, exit
                         const postID = postIDLink.textContent;
-                        const forumContract = new ethers.Contract(forumAddress, forumAbi, signer);
-                        // Check if the 'Add Tag' or 'Reply' buttons were clicked
-                        let action;
-                        if (e.target.classList.contains('tag-button')) {
-                            const inputWrapper = postElement.querySelector('.input-tag');
-                            const inputField = postElement.querySelector('.input-field');
-                            inputWrapper.toggleAttribute('hidden'); // Toggle visibility
-                            inputField.focus(); // Focus on the field for immediate typing
-                            action = "tag";
-                        }
-                        else if (e.target.classList.contains('reply-button')){
-                            const inputWrapper = postElement.querySelector('.input-reply');
-                            const inputField = postElement.querySelector('.input-field');
-                            inputWrapper.toggleAttribute('hidden'); // Toggle visibility
-                            inputField.focus(); // Focus on the field for immediate typing
-                            action = "reply";
-                        }
-                        else if (e.target.classList.contains('upvote-button')){
-                            try{
-                                await forumContract.upvotePost(postID);
-                            }
-                            catch (error){
-                                let errorElement = e.target.closest('#givenPostsFooter');
-                                let analysis = error.message;//TODO: already voted on post, cant vote on your own post
-                                if (analysis.includes("Already")){
-                                    errorElement.innerHTML += `You've already voted on this post. `;
-                                }
-                                else if (analysis.includes("Author")){
-                                    errorElement.innerHTML += `You are the post owner. `;
-                                }
-                                else{
-                                    errorElement.innerHTML += `You don't hold <a href="../token.html">TALK tokens</a> `;
-                                }
-                            }
-                        }
-                        else if (e.target.classList.contains('downvote-button')){
-                            try{ 
-                                await forumContract.downvotePost(postID);
-                            }
-                            catch (error){
-                                let errorElement = e.target.closest('#givenPostsFooter');
-                                let analysis = error.message;//TODO: already voted on post, cant vote on your own post
-                                if (analysis.includes("Already")){
-                                    errorElement.innerHTML += `You've already voted on this post. `;
-                                }
-                                else if (analysis.includes("Author")){
-                                    errorElement.innerHTML += `You are the post owner. `;
-                                }
-                                else{
-                                    errorElement.innerHTML += `You don't hold <a href="./token.html">TALK tokens</a> `;
-                                }
-                            }
-                        }
+                        // Create new content
+                        let newContent = repliesElement.querySelector('td:nth-child(2)').outerHTML.replace("\"two-thirds\"", "\"one-sixth\"");
+                        let replyContent = await fetchReplies(postID, forumContract);
+                        replyContent = replyContent.join('');
+                        newContent += `<td class="two-thirds" id="replyContent">` + replyContent + `</td>`;
+                        
+                        // Update the innerHTML of the entire row
+                        repliesElement.innerHTML = firstTdHTML + newContent;
+                    }
 
-                        else if (e.target.classList.contains('submit-tag')) {
-                            console.log("tagg");
-                            
-                            const inputField = postElement.querySelector('.input-field-tag');
-                            const inputValue = inputField.value.trim();
-                            console.log(inputValue);
-                            try {
-                                await forumContract.tagPost(postID, inputValue);
-                            }
-                            catch (error){
-                                let errorElement = e.target.closest('#givenPostsFooter');
-                                errorElement.innerHTML += `That's an invalid <a href="./tags.html">tag.</a> `;
-                            }
-                        }
-                        else if (e.target.classList.contains('submit-reply')) {
-                            const inputField = postElement.querySelector('.input-field-reply');
-                            const inputValue = inputField.value.trim();
-                            forumContract.createPost(inputValue, postID);
-                        }
-                    });
-                }
-                async function loadContent(id, contract){
-                    let content = await contract.getPost(id);
-                    let ensName = await getENSName(content[0], provider);
-                    
-                    // TODO: turn date getter into its own function
-                    const events = await contract.queryFilter(contract.filters.PostCreated(id));
-                    let dateField = "Day One";
-                    
-                    try{
-                        const blockNumber = events[0].blockNumber;
-                        const block = await provider.getBlock(blockNumber);
-                        const timestamp = block.timestamp;
-                        const dateObject = new Date(timestamp * 1000);
-                        const humanReadableDate = await formatDateForDisplay(dateObject);
-                        dateField = humanReadableDate;
+                    try {
+                        const signer = provider.getSigner();
+                        await signer.getAddress();
                     }
-                    catch(error){
-                        console.log("post Event not found could be because its the 0th post");
+                    catch (error){
+                        // document.getElementsById.givenPostsFooter.innerHTML += "Sign in with web3"
+                        // TODO: Fix infinite error messages?
+                        let errorElement = event.target.closest('#givenPostsFooter');
+                        errorElement.innerHTML += `Sign in with <a href = \"./web3.html\">web3</a> `;
                     }
-                    
-                    // TODO: turn setup header into its own function
-                    let postHTML = "<h1>";
-                    postHTML += `<div style="display: flex; justify-content: space-between;">`;
-                    postHTML += dateField;
-                    postHTML += `<a href="https://talk.online/${id.toString()}" text-align: right;>${id.toString()}</a></div>`
-                    // TODO: make this work even if network does not support ens
-                    postHTML +=  ensName;
-                    postHTML += "</h1>";
-                    
-                    if(isURL(content[1])){
-                        postHTML += await handleURL(content[1], "post-content");
-                    } else {
-                        // not a url, just use it as text
-                        console.log("text");
-                        postHTML += `<p class = "post-content">${content[1]}</p>`;
-                    }
-                    
-                    var footer = await buttonMaker();
-                    postHTML += footer;
-
-                    postHTML += `<table class = "postInfo"><tr> <td class ="one-sixth">Score: ` + ((content[2] - content[3]) / (10 ** 18)).toString();
-                    postHTML += `</td> <td class="two-thirds">` + await fetchTags(id, contract) + `</td>`;
-                    postHTML += `<td class="one-sixth" id = "clickableReplies">Replies: ` + content[4].length.toString() + `</td> </tr> </table>`;
-                    return postHTML;
-                }
-                function displayContent(provider, sectionID){
-                    const forumContractView = new ethers.Contract(forumAddress, forumAbi, provider);
+                });
+ 
+                function displayContent(forumViewer, sectionID, tagViewer){
                     const cardContainer = document.getElementById(sectionID);
                     let currentPage = 1;
                     const cardLimit = 999;
-                    const cardIncrease = 8;
+                    const cardIncrease = 6;
                     const pageCount = Math.ceil(cardLimit / cardIncrease);
                     let throttleTimer;
                     const throttle = (callback, time) => {
@@ -271,16 +162,20 @@
                         const startRange = (pageIndex - 1) * cardIncrease;
                         const endRange = currentPage == pageCount ? cardLimit : pageIndex * cardIncrease;
                         var algo = document.getElementById("options").value;
-                        var postIds = await enableAlgo(algo, forumContractView);
+                        var postIds = await enableAlgo(algo, forumViewer, currentPage, 0);
+                        document.getElementById("loadingGif").style.display = "none";
                         for (let i = startRange + 1; i <= endRange; i++) {
                             createPost(i, postIds.pop());
                         }
                     };
+                    let ensProvider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
+                    // Turn createPost to createPosts so it generates a new squad of posts instead of calling the infura api multiple times
                     const createPost = async (index, postID) => {
                         const post = document.createElement("article");
                         post.className = "post";
                         post.id = `post${index}`;
-                        post.innerHTML = await loadContent(postID, forumContractView);
+                        // TODO: postID will actually need to be an array of posts
+                        post.innerHTML = await loadContent(postID, forumViewer, provider, ensProvider, tagViewer);
                         cardContainer.appendChild(post);
                         return post;
                     }
@@ -301,121 +196,11 @@
                     const removeInfiniteScroll = () => {
                         window.removeEventListener("scroll", handleInfiniteScroll);
                     };
-                    cardContainer.innerHTML = "";
                     addCards(currentPage);
                     window.addEventListener("scroll", handleInfiniteScroll);
 
                 }
 
-                let provider;
-                if(window.ethereum){
-                    provider = new ethers.providers.Web3Provider(window.ethereum);
-                    let signer;
-                    try{
-                        let network = await provider.getNetwork();
-                        if (network.chainId == 1) {
-                            // MetaMask requires requesting permission to connect users accounts
-                            await provider.send("eth_requestAccounts", []);
-                            // The MetaMask plugin also allows signing transactions to
-                            // send ether and pay to change state within the blockchain.
-                            // For this, you need the account signer...
-                            signer = provider.getSigner();
-                        }
-                        else{
-                            provider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
-                            document.getElementById("createPost").innerHTML = "Please switch your network to the Ethereum Mainnet";
-                        }  
-
-                    }
-                    catch(error){
-                        provider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
-                        document.getElementById("createPost").innerHTML = "Unable to detect network";
-                    }
-                    // TODO: change algo to recommended
-                    displayContent(provider, "posts");
-                    activateContent(signer);
-                }
-                else{
-                    document.getElementById("createPost").innerHTML = "Sign in with a <a href = \"./web3.html\">Web3 provider</a>";
-                    provider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
-                    displayContent(provider, "posts");
-                }
-                
-                document.getElementById('posts').addEventListener('click', async (event) => {
-                    if (event.target.id === 'clickableReplies') {
-                        let repliesElement = event.target.closest('tr');
-                        let firstTdHTML = repliesElement.querySelector('td:first-child').outerHTML;
-                        const forumContract = new ethers.Contract(forumAddress, forumAbi, provider);
-                        const postElement = event.target.closest('article');
-                        if (!postElement) return;  // If clicked outside a post, exit
-                        // Fetch the post ID from the link in the post header
-                        const postIDLink = postElement.querySelector('h1 a');
-                        if (!postIDLink) return;  // If the link isn't found, exit
-                        const postID = postIDLink.textContent;
-                        // Create new content
-                        let newContent = repliesElement.querySelector('td:nth-child(2)').outerHTML.replace("\"two-thirds\"", "\"one-sixth\"");
-                        let replyContent = await fetchReplies(postID, forumContract);
-                        newContent += `<td class="two-thirds">` + replyContent + `</td>`;
-                        
-                        // Update the innerHTML of the entire row
-                        repliesElement.innerHTML = firstTdHTML + newContent;
-                    }
-
-                    try {
-                        const signer = provider.getSigner();
-                        await signer.getAddress();
-                    }
-                    catch (error){
-                        // document.getElementsById.givenPostsFooter.innerHTML += "Sign in with web3"
-                        // TODO: Fix infinite error messages?
-                        let errorElement = event.target.closest('#givenPostsFooter');
-                        errorElement.innerHTML += `Sign in with <a href = \"./web3.html\">web3</a> `;
-                    }
-                });
-                
-                async function fetchReplies(postID, contractObject){
-
-                    let newz = await contractObject.getPost(postID);
-                    let replyArr = [];
-
-                    for (const element of newz[4]) {
-                        console.log(parseInt(element._hex, 16)); // Log the parsed element
-
-                        let fullReplyInformation = await contractObject.getPost(parseInt(element._hex, 16)); // Await the asynchronous call
-                        replyArr.push(fullReplyInformation[1]);
-                        // TODO: fetch information about sub-replies
-                    }
-                    // TODO: HERE: replyArr formatting
-                    return replyArr;
-                }
-
-                async function fetchTags(postID, contractObject) {
-
-                    // Create a filter for the 'PostTagged' event where the first argument (postId) matches the given postID
-                    const filter = contractObject.filters.PostTagged(postID, null, null);
-
-                    // Query the event logs with the filter
-                    const logs = await contractObject.queryFilter(filter);
-                    let tags = `<div class="tag-container">`;
-                    for(var i = 0; i < logs.length; i ++){
-                        let newCo = logs[i].args[3];
-                        // modifier
-                        if(isURL(logs[i].args[4])){
-                            newCo = `<a href="https://talk.online/${newCo}">` + await handleURL(logs[i].args[4], "tag-content") + `</a>`;
-                        }
-                        else{
-                            newCo = `<a href="https://talk.online/${newCo}">` + newCo.slice(0, 12) + `</a>`;
-                        }
-                        tags += newCo;
-                    }
-                    tags += `</div>`;
-                    if(logs.length == 0){
-                        tags = `Tags go here`;
-                    }
-                    return tags;
-                }
-
             </script>
-
 </body>
 </html>
