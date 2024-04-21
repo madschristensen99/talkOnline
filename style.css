@@ -1,39 +1,68 @@
+/* The sticky class is added to the navbar with JS when it reaches its scroll position */
+.sticky {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  max-width: 100%;
+  z-index: 1000;
+}
+/* Add some top padding to the page content to prevent sudden quick movement (as the navigation bar gets a new position at the top of the page (position:fixed and top:0) */
+.sticky + .content {
+  padding-top: 60px;
+}
+.content{
+    max-width: 100%;
+}
         body {
             margin: 0;
             padding: 0;
             background-color: #f7f7f7;
-            font-family: 'Segoe UI', sans-serif;;
+            font-family: 'Segoe UI', sans-serif;
         }
         header {
-            background-color: #008B8B;
+            background-color: #008b8b;
             color: #fff;
-            padding: 14px;
+            padding: 10px;
             text-align: center;
-            font-size: 24px;
+            font-size: 20px;
             font-family: 'Segoe UI', sans-serif;
             font-weight: bold;
-            border-bottom: 2px solid #93E9BE;
+            border-bottom: 2px solid #00BEBE;
         }
         h1 {
-            background-color: #008B8B;
+            background-color: #008b8b;
             padding: 5px;
-            font-size: 16px;
+            font-size: 12px;
             font-weight: normal;
             font-family: 'Segoe UI', sans-serif;
             text-align: center;
             margin: 0px;
             color: #FFFFFF;
-            border-top-left-radius: 5px; /* Rounds the top left corner */
-            border-top-right-radius: 5px; /* Rounds the top right corner */
+            border-top-left-radius: 10px; /* Rounds the top left corner */
+            border-top-right-radius: 10px; /* Rounds the top right corner */
         }
-
+        h2 {
+            color: #008b8b;
+        }
+        a {
+            color: #008b8b;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+            color: #008b8b;
+        }
         .container {
             max-width: 1000px;
             margin: 50px auto;
             background-color: #fff;
-            padding: 16px;
+            padding: 14px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             margin: 0 auto;
+            border-bottom-right-radius: 10px;
+            border-bottom-left-radius: 10px;
+            border-bottom: 1px solid #00BEBE;
         }
         form {
             font-family: 'Segoe UI', sans-serif;
@@ -48,16 +77,16 @@
             font-family: 'Segoe UI',  sans-serif;
             padding: 10px 20px; 
             border: 1px solid #ccc;
-            border-radius: 4px;
+            border-radius: 6px;
             margin-bottom: 16px;
         }
         .sendPost {
             padding: 10px 20px;
-            background-color: #008B8B;
+            background-color: #008b8b;
             font-family: 'Segoe UI', sans-serif;
             color: #fff;
-            border: 1px solid #93E9BE; /* seafoam green border */
-            border-radius: 4px;
+            border: 1px solid #00BEBE; /* seafoam green border */
+            border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
             box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.25);
@@ -69,17 +98,18 @@
         .menu {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 16px;
+            margin-bottom: 10px;
             font-family: 'Segoe UI', sans-serif;
+
         }
         select {
             font-family: 'Segoe UI', sans-serif;
-            color: #008B8B;
-            border-color: #05696B;
+            color: #008b8b;
+            border-color: #008b8b;
         }
         #posts .post {
             font-family: 'Segoe UI', sans-serif;
-            border: 1px solid #93E9BE;
+            border: 1px solid #00BEBE;
             padding: 6px;
             margin-bottom: 10px;
             background-color: #fff;
@@ -93,7 +123,7 @@
             text-align: right;
             margin: 0;
             margin-bottom: 10px;
-            color: #93E9BE; /* seafoam green */
+            color: #00BEBE; /* seafoam green */
             display: inline-block; /* makes it inline */
         }
 
@@ -107,34 +137,36 @@
         }
         .ens-link {
             color: #FFB81C;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
         }
         .downvote-button, .submit-tag, .submit-reply {
-            background-color: #008B8B; /* madstea */
+            background-color: #008b8b; /* madstea */
             color: #fff;
             border: none;
             padding: 4px 10px;
             margin: 4px 3px 0;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
             font-family: 'Segoe UI', sans-serif;
-            border: 1px solid #93E9BE;
+            border: 1px solid #00BEBE;
             box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.25);
+            font-size: 12px;
         }
 
-        .upvote-button, .tag-button, .reply-button {
-            background-color: #008B8B; /* madstea */
+        .upvote-button, .tag-button, .reply-button, .edit-tag-button, .mint-tag-button {
+            background-color: #008b8b; /* madstea */
             color: #fff;
             border: none;
             padding: 4px 10px;
             margin: 4px 3px 0;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
             font-family: 'Segoe UI', sans-serif;
             font-weight: bold;
-            border: 1px solid #93E9BE;
+            border: 1px solid #00BEBE;
             box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.25);
+            font-size: 12px;
         }
 
         .upvote-button:hover, .downvote-button:hover, .tag-button:hover, .reply-button:hover, .contribute-button:hover, .submit-tag:hover, .submit-reply:hover {
@@ -159,16 +191,31 @@
             box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.1);
         }
 
-        .post-content video, .post-content iframe {
+        .post-content video {
             width: 100%;
             aspect-ratio: 16 / 9;
             margin: 0;
             box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.1);
         }
+        .post-content iframe {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            margin: 0;
+            box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.1);
+        }
+        /* Specific rule for iframe with ID 'youtube' */
+        .post-content iframe#youtube {
+            aspect-ratio: 16 / 9;
+        }
+        .post-content {
+            width: 100%;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 16px;
+        }
 
         .tag-container img, .tag-container iframe, .tag-container video {
             max-width: 64px;
-            border-radius: 2px;
+            border-radius: 4px;
             box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.25);
         }
         .tag-container {
@@ -178,21 +225,25 @@
         }
         .tag-container a {
             font-family: 'Segoe UI', Tahoma, Geneva, 'Segoe UI', sans-serif; /* Consistent with the body font */
-            font-size: 20px; /* Larger font size for emphasis */
-            color: #008B8B; /* Using the header background color for text */
+            font-size: 14px; /* Larger font size for emphasis */
+            color: #008b8b; /* Using the header background color for text */
             font-weight: bold; /* Bold font for a more playful look */
             margin-right: 2px; /* Removed the margin as per your request */
             margin-left: 2px;
             text-shadow: 1px 1px 2px rgba(147, 233, 190, 0.7); /* Soft shadow for a bubbly effect */
         }
         h1 a {
-            color: #93E9BE;
-            font-size: 16px;
+            color: #00BEBE;
+            font-size: 12px;
             font-weight: bold;
+        }
+        h1 a:hover{
+            color: #00BEBE;
+
         }
         .address-link {
             color: #aaa;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: normal;
         }
         .pdf-container {
@@ -209,38 +260,56 @@
         #clickableReplies {
             cursor: pointer;
             background-color: transparent; /* Make background transparent */
-            color: #008B8B; /* Use the theme color for the text to match the color scheme */
+            color: #008b8b; /* Use the theme color for the text to match the color scheme */
             text-decoration: none; /* Remove underline by default */
             padding: 5px; /* Optional: for easier clickability */
-            font-size: 16px; /* Match the font size to the rest of the design */
+            font-size: 14px; /* Match the font size to the rest of the design */
             border: none; /* Remove borders if any */
         }
 
         /* Styling for the clickable replies on hover */
         #clickableReplies:hover {
             text-decoration: underline; /* Add underline on hover to indicate it's clickable */
-            color: #006767; /* Optional: darken the color on hover for visual feedback */
+            color: #008b8b; /* Optional: darken the color on hover for visual feedback */
         }
 
         .menu a:visited {
-            color: #582C83; /* Replace with your desired shade of sewanee purple */
+            color: #008b8b; /* Replace with your desired shade of sewanee purple */
         }
+
         .menu a {
-            color: #008B8B;
+            color: #008b8b;
         }
         .postInfo {
             font-family: 'Segoe UI', sans-serif;
+            font-size: 14px;
         }
         #replyContent {
             text-align: left;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 14px;
         }
         #noTagMessage {
             font-family: 'Segoe UI', sans-serif;
             text-align: center;
         }
         .input-field-tag, .input-field-reply {
-            width: 40%; 
+            width: 60%; 
             font-family: 'Segoe UI',  sans-serif;
             border: 1px solid #ccc;
-            border-radius: 5px;
+            border-radius: 6px;
+            padding: 5px 10px;
         }
+        footer {
+            font-size: 14px;
+        }
+        iframe {
+            width: 100%;
+        }
+        #loadingGif {
+            width: 16%;
+        }
+::selection {
+  background: #00BEBE; /* Background color for highlighted text */
+  color: #000000;      /* Text color for highlighted text */
+}
