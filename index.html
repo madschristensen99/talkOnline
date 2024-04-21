@@ -8,11 +8,47 @@
     <link rel="stylesheet" href="./style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="./blockies_test/blockies.js"></script>
+    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    
+<!-- HTML Meta Tags -->
+<title>Talk.Online: Empowering Web3 Community Governance</title>
+<meta name="description" content="Talk.Online revolutionizes digital platforms with a novel tokenomics architecture, promoting user ownership, free speech, and community-driven governance through blockchain technology.">
+
+<!-- Facebook Meta Tags -->
+<meta property="og:url" content="https://talk.online/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Talk.Online: Empowering Web3 Community Governance">
+<meta property="og:description" content="Talk.Online revolutionizes digital platforms with a novel tokenomics architecture, promoting user ownership, free speech, and community-driven governance through blockchain technology.">
+<!--
+  You can generate this image URL dynamically: https://ogcdn.net/cd15ee6c-7a03-4995-87dd-664a4d2c56cb/v2/{site_text}/{title_text}/{author_image_url}/{author_name_text}/og.png
+  Replace the variables in the brackets with your own values and use this URL in the image tag below this comment. Ensure values are URL encoded.
+  For more information, read: https://www.opengraph.xyz/blog/how-to-implement-dynamic-open-graph-images
+-->
+<meta property="og:image" content="https://ogcdn.net/cd15ee6c-7a03-4995-87dd-664a4d2c56cb/v2/talk.online/Talk.Online%3A%20Empowering%20Web3%20Community%20Governance/https%3A%2F%2Fopengraph.b-cdn.net%2Fproduction%2Fdocuments%2Fe3dc2a94-06e7-46da-b077-7a979e4b7d4a.jpg%3Ftoken%3DCp9e45-kjFRCNass6klu55ZJico2ssaWX2cw0iz-hFM%26height%3D800%26width%3D1200%26expires%3D33249123791/REMSee/og.png">
+
+<!-- Twitter Meta Tags -->
+<meta name="twitter:card" content="summary_large_image">
+<meta property="twitter:domain" content="talk.online">
+<meta property="twitter:url" content="https://talk.online/">
+<meta name="twitter:title" content="Talk.Online: Empowering Web3 Community Governance">
+<meta name="twitter:description" content="Talk.Online revolutionizes digital platforms with a novel tokenomics architecture, promoting user ownership, free speech, and community-driven governance through blockchain technology.">
+<!--
+  You can generate this image URL dynamically: https://ogcdn.net/cd15ee6c-7a03-4995-87dd-664a4d2c56cb/v2/{site_text}/{title_text}/{author_image_url}/{author_name_text}/og.png
+  Replace the variables in the brackets with your own values and use this URL in the image tag below this comment. Ensure values are URL encoded.
+  For more information, read: https://www.opengraph.xyz/blog/how-to-implement-dynamic-open-graph-images
+-->
+<meta name="twitter:image" content="https://ogcdn.net/cd15ee6c-7a03-4995-87dd-664a4d2c56cb/v2/talk.online/Talk.Online%3A%20Empowering%20Web3%20Community%20Governance/https%3A%2F%2Fopengraph.b-cdn.net%2Fproduction%2Fdocuments%2Fe3dc2a94-06e7-46da-b077-7a979e4b7d4a.jpg%3Ftoken%3DCp9e45-kjFRCNass6klu55ZJico2ssaWX2cw0iz-hFM%26height%3D800%26width%3D1200%26expires%3D33249123791/REMSee/og.png">
+
+<!-- Meta Tags Generated via https://www.opengraph.xyz -->
+
 </head>
 <body>
-    <header>Talk Online</header>
+    <header>
+        Talk Online
 
-    <div class="container">
+    </header>
+
+    <div class="container" id="navbar">
         <div class="menu">
 
                 <a href="./polygon/account.html">Account</a>
@@ -23,7 +59,7 @@
                     <option value="popular">Popular</option>
                     <option value="random">Random</option>
                     <option value="recommended">Recommended</option>
-                    <option value="newUnf">New (Unfiltered)</option>
+                    <option value="newUnfiltered">New (Unfiltered)</option>
                     <option value="garbage">Garbage</option>
                 </select>
 
@@ -35,172 +71,265 @@
         
     </div>
 
-    <div id = "posts">
-        <img src = "./loadTalk.gif" style = "display: block; margin-left: auto; margin-right: auto" id = "loadingGif" class = "loading">
+    <div id = "posts" class = "content">
+        <article class="post" id="post1">
+            <img src = "./loadTalk.gif" style = "display: block; margin-left: auto; margin-right: auto"   class = "loading">
+        </article>
+
     </div>
-            <script type = "module">
+<script type = "module">
+
+    document.getElementById('options').addEventListener('change', function() {
+        localStorage.setItem('selectedAlgo', this.value);
+        location.reload();
+    });
+
+    var selectedAlgo = localStorage.getItem('selectedAlgo');
+    if (selectedAlgo) {
+        document.getElementById('options').value = selectedAlgo;
+    }
+
+
+
+// When the user scrolls the page, execute setSticky
+window.onscroll = function() { setSticky(); };
+
+// Get the navbar
+var navbar = document.getElementById("navbar");
+
+// Get the content
+var content = document.querySelector('.content'); // Adjust this selector as needed
+
+// Get the offset position of the navbar
+var stickyOffset = navbar.offsetTop;
+
+function setSticky() {
+    if (window.pageYOffset >= stickyOffset) {
+        if (!navbar.classList.contains("sticky")) {
+            navbar.classList.add("sticky");
+            document.getElementById("createPost").style.display = 'none';
+            // Adjust padding-top of the content when navbar becomes sticky
+            content.style.paddingTop = navbar.offsetHeight + 'px';
+        }
+    } else {
+        if (navbar.classList.contains("sticky")) {
+            navbar.classList.remove("sticky");
+            document.getElementById("createPost").style.display = '';
+            // Reset padding-top of the content when navbar is not sticky
+            content.style.paddingTop = 0;
+        }
+    }
+}
+
+// This checks if the page is loaded with a scroll position that requires the sticky navbar to be activated.
+document.addEventListener("DOMContentLoaded", function() {
+    setSticky();
+});
+
+    import { ethers } from "./ethers.min.js";
+
+    import { forumAddress, forumAbi, tagAddress, tagAbi, tokenAddress, tokenAbi, punkAddress, punkAbi, corgiAddress, corgiAbi } from './polygon/constants.js';
+    import { getENSName, isURL, getFileType, handleURL, formatDateForDisplay, buttonMaker, fetchReplies, fetchTags, loadContent, activateContent} from './polygon/helpers.js';
+    import { enableAlgo } from './polygon/algo.js';
+
+    let provider;
+    // initialize provider
+    try{
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        let network = await provider.getNetwork();
+        if(network.chainId == 137){
+            document.getElementById("createPost").innerHTML = `<input type="text" placeholder="Post a link! Say something." id = "post-content"> <button class="sendPost" >Send it</button>`;
+        }
+        else {
+            document.getElementById("createPost").innerHTML = `Please switch your network to Polygon`;
+            provider = new ethers.providers.JsonRpcProvider("https://lb.drpc.org/ogrpc?network=polygon&dkey=AtJFe3JWDkiWjmmEZ1SdjGXlbUIv2ygR7qMfGtyyLTIM");
+        }
+        // TODO: if chain id is 137
+        // TODO: else " switch your network"
+    } catch(error) {
+        provider = new ethers.providers.JsonRpcProvider("https://lb.drpc.org/ogrpc?network=polygon&dkey=AtJFe3JWDkiWjmmEZ1SdjGXlbUIv2ygR7qMfGtyyLTIM");
+        document.getElementById("createPost").innerHTML = "Sign in with a <a href = \"./web3.html\">Web3 provider</a>";
+    }
+
+    const forumViewer = new ethers.Contract(forumAddress, forumAbi, provider);
+    const tagViewer = new ethers.Contract(tagAddress, tagAbi, provider);
+    const punkViewer = new ethers.Contract(punkAddress, punkAbi, provider);
+    const corgiViewer = new ethers.Contract(corgiAddress, corgiAbi, provider);
+
+    let postArr = await forumViewer.getPostReplies(0, 0);
+    let forumLength = postArr.length;
+    let popAlgo = await forumViewer.returnProAlgo(0, 0);
+    let conAlgo = await forumViewer.returnConAlgo(0, 0);
+
+        
+
+    let postCounter = 0; // Assuming you start with 1 post
+    let postsWithDislikesCount = 0;
+
+    // TODO: algo, post id here it will be 0 but for post replies it will be the post id 
+    const loadNewContent = async (forumViewer, tagViewer, selectedAlgo) => {
+        // Increment post counter or generate a unique ID for the new post
+        postCounter++;
+
+        // Create new article HTML. Adjust according to your content structure
+        const newArticle = document.createElement('article');
+        let newPostId = "post" + (postCounter + 1).toString();
+        newArticle.className = 'post';
+        newArticle.id = newPostId;
+        newArticle.innerHTML = `
+                <img src = "./loadTalk.gif" class = "loading" style = "display: block; margin-left: auto; margin-right: auto">
+                <!-- Replace with your content fetching logic -->
+        `;
+        // Append the new article to the posts container
+        document.getElementById('posts').appendChild(newArticle);
+
+        // Observe the new loading image
+        observeLastLoadingImage();
+        
+        let postId = "post" + postCounter.toString();
+        let contentToAdjust = document.getElementById(postId);
+        let ensProvider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
             
+        // TODO: new enableAlgo that takes as argument the post id which here will be 0, the contract object and the algochosen
+        // up here we gotsto take selectedAlgo and pick a postId 
 
-                // TODO: format tagging
-                // <button style="border-radius: 50%; border: 1px solid #93E9BE; background-color: #008b8b; padding: 10px 15px; display: inline-flex; align-items: center; justify-content: center;"><i class="fa-solid fa-tag" style="color: white; font-size: 12px;"></i></button>
-                // Save the selected algorithm to localStorage when it changes
-                document.getElementById('options').addEventListener('change', function() {
-                    localStorage.setItem('selectedAlgo', this.value);
 
-                    location.reload();
-
-                });
-
-                var selectedAlgo = localStorage.getItem('selectedAlgo');
-                if (selectedAlgo) {
-                    document.getElementById('options').value = selectedAlgo;
+        var idToReturn;
+        if (selectedAlgo == "new"){
+            console.log("new");
+            let threshold = 2000;
+            let postScore;
+            let idTry;
+            do {
+                idTry = postArr[forumLength - postCounter - postsWithDislikesCount];
+                postScore = await forumViewer.getConScore(idTry);
+                if(postScore > threshold){
+                    postsWithDislikesCount ++;
                 }
-
-
-                import { ethers } from "./ethers.min.js";
-                // TODO: why no importing punk abi and address work on safari?
-                import { forumAddress, forumAbi, tagAddress, tagAbi, tokenAddress, tokenAbi } from './polygon/constants.js';
-                import { getENSName, isURL, getFileType, handleURL, formatDateForDisplay, buttonMaker, fetchReplies, fetchTags, loadContent, activateContent} from './polygon/helpers.js';
-                import { enableAlgo } from './polygon/algo.js';
-
-                // A Web3Provider wraps a standard Web3 provider, which is
-                // what MetaMask injects as window.ethereum into each page
-
-                let provider;
-                if(window.ethereum){
-                    provider = new ethers.providers.Web3Provider(window.ethereum);
-                    let signer;
-                    try{
-                        let network = await provider.getNetwork();
-                        if (network.chainId == 137) {
-                            // MetaMask requires requesting permission to connect users accounts
-                            await provider.send("eth_requestAccounts", []);
-                            // The MetaMask plugin also allows signing transactions to
-                            // send ether and pay to change state within the blockchain.
-                            // For this, you need the account signer...
-                            signer = provider.getSigner();document.getElementById("createPost").innerHTML = `<input type="text" placeholder="Post a link! Say something." id = "post-content"> <button class="sendPost" >Send it</button>`;
-                        }
-                        else{
-                            provider = new ethers.providers.JsonRpcProvider("https://polygon-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
-                            document.getElementById("createPost").innerHTML = "Please switch your network to Polygon";
-                        }  
-
-                    }
-                    catch(error){
-                        provider = new ethers.providers.JsonRpcProvider("https://polygon-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
-                        console.log(provider);
-                        document.getElementById("createPost").innerHTML = "Unable to detect network";
-                    }
+            }
+            while(postScore > threshold);
+            idToReturn = idTry;
+            //postScore = await forumViewer.getConScore(idTry);
+            // postScore = parseInt(postScore._hex, 16) / (10 ** 18);
+        }
+        else if (selectedAlgo == "popular"){
+            console.log("popular");
+            idToReturn = popAlgo[postCounter - 1]
+        }
+        else if (selectedAlgo == "random"){
+            idToReturn = parseInt(postArr[Math.trunc(Math.random() * forumLength)]);
+        }
+        else if (selectedAlgo == "recommended"){
+            console.log("recommended");
+            idToReturn = 0;
+        }
+        else if (selectedAlgo == "newUnfiltered"){
+            console.log("newunf");
+            idToReturn = postArr[forumLength - postCounter];
+        }
+        else if (selectedAlgo == "garbage"){
+            console.log("garbage");
+            idToReturn = conAlgo[postCounter - 1]
+        }
+        else {
+            console.log("new");
+            let threshold = 2000;
+            let postScore;
+            let idTry;
+            do {
+                idTry = postArr[forumLength - postCounter - postsWithDislikesCount];
+                postScore = await forumViewer.getConScore(idTry);
+                if(postScore > threshold){
+                    postsWithDislikesCount ++;
+                }
+            }
+            while(postScore > threshold);
+            idToReturn = idTry;
+            //postScore = await forumViewer.getConScore(idTry);
+            // postScore = parseInt(postScore._hex, 16) / (10 ** 18);
+        }
                     
-                    const forumViewer = new ethers.Contract(forumAddress, forumAbi, provider);
-                    const tagViewer = new ethers.Contract(tagAddress, tagAbi, provider);
-                    //const punkViewer = new ethers.Contract(punkAddress, punkAbi, provider);
-                    displayContent(forumViewer, "posts", tagViewer);
-                    const contractSigner = new ethers.Contract(forumAddress, forumAbi, signer);
-                    activateContent(contractSigner);
-                }
-                else{
-                    document.getElementById("createPost").innerHTML = "Sign in with a <a href = \"./web3.html\">Web3 provider</a>";
-                    provider = new ethers.providers.JsonRpcProvider("https://polygon-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
-                    const forumViewer = new ethers.Contract(forumAddress, forumAbi, provider);
-                    const tagViewer = new ethers.Contract(tagAddress, tagAbi, provider);
-                    displayContent(forumViewer, "posts", tagViewer);
-                }
+                    
+        // below line takes a specific post id and fetches it
+        contentToAdjust.innerHTML = await loadContent(idToReturn, forumViewer, ensProvider, tagViewer, punkViewer, corgiViewer);
+            
+        // Formats twitter embeds
+        if (window.twttr && window.twttr.widgets) {
+            window.twttr.widgets.load();
+            console.log("loaded");
+        }
+    };
+        
 
-                document.getElementById('posts').addEventListener('click', async (event) => {
-                    if (event.target.id === 'clickableReplies') {
-                        let repliesElement = event.target.closest('tr');
-                        let firstTdHTML = repliesElement.querySelector('td:first-child').outerHTML;
-                        const forumContract = new ethers.Contract(forumAddress, forumAbi, provider);
-                        const postElement = event.target.closest('article');
-                        if (!postElement) return;  // If clicked outside a post, exit
+        
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Loading image is visible, load new content
+                // TODO: algo
+                loadNewContent(forumViewer, tagViewer, selectedAlgo);
+
+                // Stop observing the current target
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        root: null, // relative to the viewport
+        threshold: 0.1, // trigger if at least 10% of the image is visible
+    });
+
+    const observeLastLoadingImage = () => {
+        const loadingImages = document.querySelectorAll('.loading');
+        const lastLoadingImage = loadingImages[loadingImages.length - 1];
+        observer.observe(lastLoadingImage);
+    };
+
+    // Start observing the last loading image initially
+    observeLastLoadingImage();
+
+    // activates content
+    let signer = provider.getSigner();
+    const contractSigner = new ethers.Contract(forumAddress, forumAbi, signer);
+    activateContent(contractSigner);
+
+    // activates replies
+    document.getElementById('posts').addEventListener('click', async (event) => {
+        if (event.target.id === 'clickableReplies') {
+            let repliesElement = event.target.closest('tr');
+            let firstTdHTML = repliesElement.querySelector('td:first-child').outerHTML;
+            const forumContract = new ethers.Contract(forumAddress, forumAbi, provider);
+            const postElement = event.target.closest('article');
+            if (!postElement) return;  // If clicked outside a post, exit
                         // Fetch the post ID from the link in the post header
-                        const postIDLink = postElement.querySelector('h1 a');
-                        if (!postIDLink) return;  // If the link isn't found, exit
-                        const postID = postIDLink.textContent;
+            const allH1Links = postElement.querySelectorAll('h1 a');
+            const postIDLink = allH1Links[1];
+            if (!postIDLink) return;  // If the link isn't found, exit
+            const postID = postIDLink.textContent;
                         // Create new content
-                        let newContent = repliesElement.querySelector('td:nth-child(2)').outerHTML.replace("\"two-thirds\"", "\"one-sixth\"");
-                        let replyContent = await fetchReplies(postID, forumContract);
-                        replyContent = replyContent.join('');
-                        newContent += `<td class="two-thirds" id="replyContent">` + replyContent + `</td>`;
+            let newContent = repliesElement.querySelector('td:nth-child(2)').outerHTML.replace("\"two-thirds\"", "\"one-sixth\"");
+            console.log(postID);
+            let replyContent = await fetchReplies(postID, forumContract);
+            replyContent = replyContent.join('');
+            newContent += `<td class="two-thirds" id="replyContent"> ` + replyContent + `</td>`;
                         
                         // Update the innerHTML of the entire row
-                        repliesElement.innerHTML = firstTdHTML + newContent;
-                    }
+            repliesElement.innerHTML = firstTdHTML + newContent;
+        }
+        try {
+            const signer = provider.getSigner();
+            await signer.getAddress();
+        }
+        catch (error){
+            // document.getElementsById.givenPostsFooter.innerHTML += "Sign in with web3"
+            // TODO: Fix infinite error messages?
+            let errorElement = event.target.closest('#givenPostsFooter');
+                        errorElement.innerHTML += `Sign in with <a href = "./web3.html">web3</a> `;
+        }
+    });
+        
 
-                    try {
-                        const signer = provider.getSigner();
-                        await signer.getAddress();
-                    }
-                    catch (error){
-                        // document.getElementsById.givenPostsFooter.innerHTML += "Sign in with web3"
-                        // TODO: Fix infinite error messages?
-                        let errorElement = event.target.closest('#givenPostsFooter');
-                        errorElement.innerHTML += `Sign in with <a href = \"./web3.html\">web3</a> `;
-                    }
-                });
- 
-                function displayContent(forumViewer, sectionID, tagViewer){
-                    const cardContainer = document.getElementById(sectionID);
-                    let currentPage = 1;
-                    const cardLimit = 999;
-                    const cardIncrease = 6;
-                    const pageCount = Math.ceil(cardLimit / cardIncrease);
-                    let throttleTimer;
-                    const throttle = (callback, time) => {
-                        if (throttleTimer) return;
-                        throttleTimer = true;
-                        setTimeout(() => {
-                            callback();
-                            throttleTimer = false;
-                        }, time);
-                    };
 
-                    const addCards = async(pageIndex) => {
-                        
-                        currentPage = pageIndex;
-                        const startRange = (pageIndex - 1) * cardIncrease;
-                        const endRange = currentPage == pageCount ? cardLimit : pageIndex * cardIncrease;
-                        var algo = document.getElementById("options").value;
-                        var postIds = await enableAlgo(algo, forumViewer, currentPage, 0);
-                        document.getElementById("loadingGif").style.display = "none";
-                        for (let i = startRange + 1; i <= endRange; i++) {
-                            createPost(i, postIds.pop());
-                        }
-                    };
-                    let ensProvider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
-                    // Turn createPost to createPosts so it generates a new squad of posts instead of calling the infura api multiple times
-                    const createPost = async (index, postID) => {
-                        const post = document.createElement("article");
-                        post.className = "post";
-                        post.id = `post${index}`;
-                        // TODO: postID will actually need to be an array of posts
-                        post.innerHTML = await loadContent(postID, forumViewer, provider, ensProvider, tagViewer);
-                        cardContainer.appendChild(post);
-                        return post;
-                    }
-                    const handleInfiniteScroll = () => {
-                        throttle(() => {
-                            const endOfPage = window.innerHeight + window.pageYOffset >= document.body.offsetHeight;
-                            if (endOfPage) {
-                                console.log("you scrolled");
-                                addCards(currentPage + 1);
-                            }
-                            if (currentPage === pageCount) {
-                                removeInfiniteScroll();
-                            }
-                        }, 1000);
-
-                    };
-
-                    const removeInfiniteScroll = () => {
-                        window.removeEventListener("scroll", handleInfiniteScroll);
-                    };
-                    addCards(currentPage);
-                    window.addEventListener("scroll", handleInfiniteScroll);
-
-                }
-
-            </script>
+</script>
 </body>
 </html>
