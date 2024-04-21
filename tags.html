@@ -3,109 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tag Management - Talk Online</title>
-    <link rel="stylesheet" href="./style.css">
+    <title>Web3 Social Media</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <header>
+        <div style="position: absolute; left: 10px;">
+            <a href="https://talk.online/" style="text-decoration: none; color: inherit; display: inline-flex;">
+                <i class="fa-solid fa-arrow-left" style="margin-right: 10px;"></i>
+            </a>
+        </div>
         Tags
     </header>
     <main>
+        <div class="container">
+        <div class="menu" id = "topMenu">
+            <a href = "./map.html">Map</a>
+            <a href = "./crm.html">CRM</a>
+            <a href = "./tagManagement.html">Management</a>
+            <a href = "./calendar.html" target="_blank">Calendar</a>
+        </div>
+        <div id = "message">
+            
+        </div>
+        <div id = "tagTable">
+            <table id ="tagRows">
+                <thead style="font-weight: bold;">
+                    <tr>
+                        <td>
+                            Name
+                        </td>
+                        <td>
+                            Creator
+                        </td>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+        </div>
+        </main>
+            <script type = "module">
+            
 
-        <!-- Tag Creation Section -->
-        <section id="tag-creation">
-            <h2>Create a New Tag</h2>
-            <div>
-                <input type="text" id="new-tag-name" placeholder="Enter tag name">
-                <button id="mint-tag-button">Mint Tag</button>
-            </div>
-        </section>
+                import { ethers } from "../ethers.min.js";
+                import { forumAddress, forumAbi, tagAddress, tagAbi, tokenAddress, tokenAbi } from './constants.js';
+                import { getENSName, isURL, getFileType, handleURL, formatDateForDisplay, buttonMaker, fetchReplies, fetchTags, loadContent, activateContent} from './helpers.js';
 
-        <!-- My Tags Section -->
-        <section id="my-tags">
-            <h2>My Tags</h2>
-            <div id="tag-management">
-                <!-- Dynamically populated list of user's tags with management options (set fees, requirements, etc.) -->
-            </div>
-        </section>
-        <section id="edit">
-            <h2>Edit Tag</h2>
-            <div id="tag-management">
-                <input type="text" id="new-tag-name" placeholder="Enter tag name">
-                <input type="text" id="content" placeholder="Enter content">
-                <button id="edit-tag-button">Edit Tag</button>
-            </div>
-        </section>
+                // A Web3Provider wraps a standard Web3 provider, which is
+                // what MetaMask injects as window.ethereum into each page
 
-    </main>
-    <footer>
-        <!-- Footer content here -->
-    </footer>
-<script type="module">
-    import { ethers } from "./ethers.min.js";
-    import { forumAddress, forumAbi, tagAddress, tagAbi } from './mainnet/constants.js';
-        let provider;
-        let signer;
-    // Wrap the initialization in an async IIFE
-    (async () => {
+                let provider;
+                if(window.ethereum){
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                    let signer;
+                    try{
+                        let network = await provider.getNetwork();
+                        if (network.chainId == 137) {
+                            // MetaMask requires requesting permission to connect users accounts
+                            await provider.send("eth_requestAccounts", []);
+                            // The MetaMask plugin also allows signing transactions to
+                            // send ether and pay to change state within the blockchain.
+                            // For this, you need the account signer...
+                            signer = provider.getSigner();
+                        }
+                        else{
+                            provider = new ethers.providers.JsonRpcProvider("https://polygon-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
+                            document.getElementById("message").innerHTML = "Please switch your network to Polygon";
+                        }  
 
-        if (window.ethereum) {
-            provider = new ethers.providers.Web3Provider(window.ethereum);
-            try {
-                let network = await provider.getNetwork();
-                if (network.chainId == 5) {
-                    await provider.send("eth_requestAccounts", []);
-                    signer = provider.getSigner();
+                    }
+                    catch(error){
+                        provider = new ethers.providers.JsonRpcProvider("https://polygon-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
+                        console.log(provider);
+                        document.getElementById("message").innerHTML = "Unable to detect network";
+                    }
+                    // TODO: change algo to recommended
+                    const forumViewer = new ethers.Contract(forumAddress, forumAbi, provider);
+                    const tagViewer = new ethers.Contract(tagAddress, tagAbi, provider);
+                    const contractSigner = new ethers.Contract(forumAddress, forumAbi, signer);
+                    
+                    
+                    const events = await tagViewer.queryFilter(tagViewer.filters.TagCreated());
+                    var tableContent = document.getElementById("tagRows");
+                    for (var i = 0; i < events.length; i ++){
+                        tableContent.innerHTML += "<tr>";
+                        tableContent.innerHTML += "<td>" + events[i].args[0] + "</td>" + "<td>" + events[i].args[1] + "</td>";
+                        
+                        // TODO: display these details into the page
+                        let details = await tagViewer.getTagDetails(events[i].args[0]);
+                        console.log(details);
+                        
+                        tableContent.innerHTML += "</tr>";
+                        console.log(tableContent);
+                    }
+
                 }
-                else {
-                    provider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
-                    console.log("Please switch your network to the Goerli testnet.");
+                else{
+                    document.getElementById("message").innerHTML = "Sign in with a <a href = \"./web3.html\">Web3 provider</a>";
+                    provider = new ethers.providers.JsonRpcProvider("https://polygon-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
+                    const forumViewer = new ethers.Contract(forumAddress, forumAbi, provider);
+                    const tagViewer = new ethers.Contract(tagAddress, tagAbi, provider);
+
+                    const events = await tagViewer.queryFilter(tagViewer.filters.TagCreated());
+                    var tableContent = document.getElementById("tagRows");
+                    for (var i = 0; i < events.length; i ++){
+                        tableContent.innerHTML += "<tr>";
+                        tableContent.innerHTML += "<td>" + events[i].args[0] + "</td>" + "<td>" + events[i].args[1] + "</td>";
+                        
+                        // TODO: display these details into the page
+                        let details = await (tagViewer.getTagDetails(events[i].args[0]));
+                        console.log(details);
+                        
+                        tableContent.innerHTML += "</tr>";
+                        console.log(tableContent);
+                    }
+
                 }
-            } catch (error) {
-                provider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
-                console.log("Unable to detect network");
-            }
-        }
-        else {
-            console.log("Sign in with a <a href = \"../web3.html\">Web3 provider</a>");
-            provider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
-        }
-    })();
 
-    // DOMContentLoaded and event listener setup
-    document.addEventListener('DOMContentLoaded', (event) => {
-        // Event listener for the 'Mint Tag' button
-        document.getElementById('mint-tag-button').addEventListener('click', function () {
-            const tagName = document.getElementById('new-tag-name').value;
-            createTag(tagName);
-        });
 
-        // Event listener for the 'Edit Tag' button
-        document.getElementById('edit-tag-button').addEventListener('click', function () {
-            const tagName = document.getElementById('new-tag-name').value; // Assuming this is the same input for tag name
-            const content = document.getElementById('content').value;
-            modifyField(tagName, content);
-        });
-    });
 
-    // Define the createTag function
-    function createTag(name) {
-        // Implementation of tag creation logic
-        console.log("Creating tag:", name);
-        const tagContract = new ethers.Contract(tagAddress, tagAbi, signer);
-        tagContract.createTag(name);
-        // Add your code here
-    }
-
-    // Define the modifyField function
-    function modifyField(name, content) {
-        // Implementation of tag modification logic
-        console.log("Modifying tag:", name, "with content:", content);
-        const tagContract = new ethers.Contract(tagAddress, tagAbi, signer);
-        tagContract.modifyField(name, content);
-        // Add your code here
-    }
-</script>
+            </script>
 
 </body>
 </html>
