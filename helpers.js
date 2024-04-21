@@ -54,7 +54,7 @@
                     console.log(`${str}`);
                     var newString = str;
                     newString = newString.replace("https://", "");
-                    // TODO: filer format differneces between links sarting with https https, or not. Make square
+                    // TODO: filer format differneces between links sarting with https https, or not. 
                     postString = `<div class = "${contentClass}"><iframe src="https://${newString}" frameborder="0"></iframe></div>`;
                 } else {
                     console.log("unknown or other" + str);
@@ -94,8 +94,7 @@
                     else{
                         var newString = str;
                         newString = newString.replace("https://", "");
-                        // TODO: want to have  box for games, 
-                        postString = `<div class = "${contentClass}"><iframe src="https://${newString}" frameborder="0" sandbox = "allow-scripts allow-forms allow-same-origin"></iframe></div>`;
+                        postString = `<div class = "${contentClass}"><iframe src="https://${newString}" frameborder="0"></iframe></div>`;
                     }
                 }
             return postString;
@@ -131,7 +130,7 @@ export async function formatDateForDisplay(date) {
 }
 
 export async function buttonMaker(){
-                    let output = `<footer id = \"givenPostsFooter\"><button class=\"upvote-button\"><i class=\"fas fa-chevron-up\"></i></button><button class=\"downvote-button\"><i class=\"fas fa-chevron-down\"></i></button><button class=\"tag-button\">Tag</button><button class=\"reply-button\">Reply</button>` +
+                    let output = `<footer id = \"givenPostsFooter\"><button class=\"upvote-button\">^</button><button class=\"downvote-button\">v</button><button class=\"tag-button\">Tag</button><button class=\"reply-button\">Reply</button>` +
                         `<div class="input-tag" hidden><input type="text" class="input-field-tag" placeholder="Enter Tag name"><button class="submit-tag">Add Tag</button></div></footer>`+
                         `<div class="input-reply" hidden><input type="text" class="input-field-reply" placeholder="Please be nice..."><button class="submit-reply">Reply</button></div></footer>`;
                     return output;
@@ -143,75 +142,74 @@ export async function buttonMaker(){
                     let replyArr = [];
 
                     for (const element of newz[4]) {
+                        console.log(parseInt(element._hex, 16)); // Log the parsed element
+
                         let fullReplyInformation = await contractObject.getPost(parseInt(element._hex, 16)); // Await the asynchronous call
                         if (isURL(fullReplyInformation[1])){
                             
                         }
-                        var avatar = blockies.create({ seed:fullReplyInformation[0] }).toDataURL();
-                        replyArr.push(`<img src = "${avatar}" style = "border-radius: 50%; max-width: 20px; vertical-align: text-top;">` + fullReplyInformation[1] + `<br>`);
+                        replyArr.push(`>` + fullReplyInformation[1] + `<br>`);
                         // TODO: fetch information about sub-replies
                     }
                     // TODO: HERE: replyArr formatting
                     return replyArr;
                 }
 
-                export async function fetchTags(postID, forumContract, tagContract) {
+                export async function fetchTags(postID, contractObject) {
 
                     // Create a filter for the 'PostTagged' event where the first argument (postId) matches the given postID
-                    const filter = forumContract.filters.PostTagged(postID, null, null);
+                    const filter = contractObject.filters.PostTagged(postID, null, null);
 
-                    // Query the event taggings with the filter
-                    const taggings = await forumContract.queryFilter(filter);
+                    // Query the event logs with the filter
+                    const logs = await contractObject.queryFilter(filter);
                     let tags = `<div class="tag-container">`;
-                    for(var i = 0; i < taggings.length; i ++){
-                        let tagName = taggings[i].args[3];
-                        let tagInfo = await tagContract.getTagDetails(tagName);
-                        if(isURL(tagInfo[2])){
-                            // TODO: try catach block to catch errors in URL display
-                            tagName = `<a href="https://talk.online/${tagName}">` + await handleURL(tagInfo[2], "tag-content") + `</a>`;
+                    for(var i = 0; i < logs.length; i ++){
+                        let newCo = logs[i].args[3];
+                        // modifier
+                        if(isURL(logs[i].args[4])){
+                            newCo = `<a href="https://talk.online/${newCo}">` + await handleURL(logs[i].args[4], "tag-content") + `</a>`;
                         }
                         else{
-                            tagName = `<a href="https://talk.online/${tagName}">` + tagName.slice(0, 12) + `</a>`;
+                            newCo = `<a href="https://talk.online/${newCo}">` + newCo.slice(0, 12) + `</a>`;
                         }
-                        tags += tagName;
+                        tags += newCo;
                     }
                     tags += `</div>`;
-                    if(taggings.length == 0){
+                    if(logs.length == 0){
                         tags = `<div id = "noTagMessage"></div>`;
                     }
                     return tags;
                 }
-                export async function loadContent(id, forumContract, provider, ensProvider, tagContract, punkContract){
-                    let content = await forumContract.getPost(id);
-                    let ensName = await getENSName(content[0], ensProvider);
-                    //let punk = await punkContract.balanceOf(content[0]);
-                    // TODO: await getPolygonpunk
-                    //let punk = "";
-                    /*
-                    if(punk > 0){
-                        let tokenId = await punkContract.tokenOfOwnerByIndex(content[0], 0);
-                        punk = `<img src="https://bronze-legal-felidae-768.mypinata.cloud/ipfs/QmPqnNnGSeFEVHR3iH2zBnKUuf8HsP8RuKUgrbWBA4VcE2/` + tokenId + `.png" style="width: 36px; height: 36px; ">`;
-                    }
-                    else {
-                        punk = "";
-                    }
-                    */
-                    // https://bronze-legal-felidae-768.mypinata.cloud/ipfs/QmPqnNnGSeFEVHR3iH2zBnKUuf8HsP8RuKUgrbWBA4VcE2/25.png
+                // TODO: getPosts as id field should actually be ids that we want to load
+                export async function loadContent(id, contract, provider){
+                    let content = await contract.getPost(id);
+                    let ensName = await getENSName(content[0], provider);
+                    
                     // TODO: turn date getter into its own function
+                    const events = await contract.queryFilter(contract.filters.PostCreated(id));
                     let dateField = "Day One";
-                    let datum = new Date(parseInt(content[6]._hex, 16) * 1000);
-                    let returnedDate = await formatDateForDisplay(datum);
-                    dateField = returnedDate;
-
+                    
+                    try{
+                        const blockNumber = events[0].blockNumber;
+                        const block = await provider.getBlock(blockNumber);
+                        const timestamp = block.timestamp;
+                        const dateObject = new Date(timestamp * 1000);
+                        const humanReadableDate = await formatDateForDisplay(dateObject);
+                        dateField = humanReadableDate;
+                    }
+                    catch(error){
+                        console.log("post Event not found could be because its the 0th post");
+                    }
+                    
                     // TODO: turn setup header into its own function
                     let postHTML = "<h1>";
                     postHTML += `<div style="display: flex; justify-content: space-between;">`;
                     postHTML += dateField;
-                    postHTML += `<a href="https://talk.online/${id.toString()}" text-align: right;>${id.toString()}</a></div>`;
-                    //postHTML += punk;
+                    postHTML += `<a href="https://talk.online/${id.toString()}" text-align: right;>${id.toString()}</a></div>`
+                    // TODO: make this work even if network does not support ens
                     postHTML +=  ensName;
                     postHTML += "</h1>";
-                    // TODO: see if last word is a link and add the html if it is
+                    
                     if(isURL(content[1])){
                         postHTML += await handleURL(content[1], "post-content");
                     } else {
@@ -223,8 +221,9 @@ export async function buttonMaker(){
                     var footer = await buttonMaker();
                     postHTML += footer;
                     // TODO: add id to this so that way nearest score can be updated in interface
-                    postHTML += `<table class = "postInfo"><tr> <td class ="one-sixth" id = "netScore">` + (Math.ceil((content[2] - content[3]) / (10 ** 18))).toString();
-                    postHTML += `</td> <td class="two-thirds">` + await fetchTags(id, forumContract, tagContract) + `</td>`;
+                    postHTML += `<table class = "postInfo"><tr> <td class ="one-sixth" id = "netScore">` + ((content[2] - content[3]) / (10 ** 18)).toString();
+                    let tagAwait = await fetchTags(id, contract);
+                    postHTML += `</td> <td class="two-thirds">` + tagAwait + `</td>`;
                     postHTML += `<td class="one-sixth" id = "clickableReplies">Replies: ` + content[4].length.toString() + `</td> </tr> </table>`;
                     return postHTML;
                 }
